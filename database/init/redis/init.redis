@@ -1,0 +1,242 @@
+# Redis initialization script
+# This script sets up the initial Redis data structures and configurations
+
+# Set Redis configuration
+CONFIG SET maxmemory-policy allkeys-lru
+CONFIG SET maxmemory 512mb
+CONFIG SET save "900 1 300 10 60 10000"
+CONFIG SET appendonly yes
+CONFIG SET appendfsync everysec
+
+# Create key prefixes for different environments
+# Development environment keys will use prefix: alert_bot_dev:
+# Production environment keys will use prefix: alert_bot_prod:
+# Test environment keys will use prefix: alert_bot_test:
+
+# Initialize rate limiting buckets
+# Format: rate_limit:{service}:{endpoint}:{identifier}
+SETEX rate_limit:api_gateway:general:default 900 0
+SETEX rate_limit:alert_engine:alerts:default 900 0
+SETEX rate_limit:subscription_service:plans:default 900 0
+SETEX rate_limit:telegram_service:messages:default 900 0
+
+# Initialize session storage
+# Format: session:{sessionId}
+# Sessions will auto-expire based on TTL
+
+# Initialize cache for market data
+# Format: cache:market_data:{symbol}:{exchange}
+HSET cache:market_data:BTCUSDT:binance price 0 volume 0 last_updated 0
+HSET cache:market_data:ETHUSDT:binance price 0 volume 0 last_updated 0
+HSET cache:market_data:ADAUSDT:binance price 0 volume 0 last_updated 0
+HSET cache:market_data:DOTUSDT:binance price 0 volume 0 last_updated 0
+HSET cache:market_data:LINKUSDT:binance price 0 volume 0 last_updated 0
+
+# Set cache expiration (5 minutes)
+EXPIRE cache:market_data:BTCUSDT:binance 300
+EXPIRE cache:market_data:ETHUSDT:binance 300
+EXPIRE cache:market_data:ADAUSDT:binance 300
+EXPIRE cache:market_data:DOTUSDT:binance 300
+EXPIRE cache:market_data:LINKUSDT:binance 300
+
+# Initialize technical indicators cache
+# Format: cache:technical_indicators:{symbol}:{exchange}:{indicator}
+HSET cache:technical_indicators:BTCUSDT:binance:sma sma20 0 sma50 0 sma200 0
+HSET cache:technical_indicators:BTCUSDT:binance:ema ema12 0 ema26 0
+HSET cache:technical_indicators:BTCUSDT:binance:rsi rsi14 50
+HSET cache:technical_indicators:BTCUSDT:binance:macd macd 0 signal 0 histogram 0
+
+# Set technical indicators cache expiration (5 minutes)
+EXPIRE cache:technical_indicators:BTCUSDT:binance:sma 300
+EXPIRE cache:technical_indicators:BTCUSDT:binance:ema 300
+EXPIRE cache:technical_indicators:BTCUSDT:binance:rsi 300
+EXPIRE cache:technical_indicators:BTCUSDT:binance:macd 300
+
+# Initialize alert processing queues
+# Format: queue:alerts:{priority}
+LPUSH queue:alerts:critical ""
+LPUSH queue:alerts:high ""
+LPUSH queue:alerts:medium ""
+LPUSH queue:alerts:low ""
+
+# Remove empty placeholder items
+LPOP queue:alerts:critical
+LPOP queue:alerts:high
+LPOP queue:alerts:medium
+LPOP queue:alerts:low
+
+# Initialize notification queues
+# Format: queue:notifications:{channel}
+LPUSH queue:notifications:telegram ""
+LPUSH queue:notifications:email ""
+LPUSH queue:notifications:webhook ""
+
+# Remove empty placeholder items
+LPOP queue:notifications:telegram
+LPOP queue:notifications:email
+LPOP queue:notifications:webhook
+
+# Initialize user session tracking
+# Format: active_sessions:{userId}
+# This will track active user sessions
+
+# Initialize API key validation cache
+# Format: api_keys:{keyHash}
+# Store hashed API keys for quick validation
+
+# Initialize subscription cache
+# Format: subscription:{userId}
+# Cache user subscription details for quick access
+
+# Initialize exchange status cache
+# Format: exchange_status:{exchange}
+HSET exchange_status:binance status "active" last_check 0 response_time 0
+HSET exchange_status:coinbase status "active" last_check 0 response_time 0
+HSET exchange_status:kraken status "active" last_check 0 response_time 0
+HSET exchange_status:huobi status "active" last_check 0 response_time 0
+HSET exchange_status:okx status "active" last_check 0 response_time 0
+
+# Set exchange status expiration (1 minute)
+EXPIRE exchange_status:binance 60
+EXPIRE exchange_status:coinbase 60
+EXPIRE exchange_status:kraken 60
+EXPIRE exchange_status:huobi 60
+EXPIRE exchange_status:okx 60
+
+# Initialize system metrics
+# Format: metrics:{service}:{metric}
+HSET metrics:alert_engine:performance alerts_processed 0 avg_processing_time 0 errors 0
+HSET metrics:api_gateway:performance requests_processed 0 avg_response_time 0 errors 0
+HSET metrics:subscription_service:performance subscriptions_processed 0 avg_processing_time 0 errors 0
+HSET metrics:telegram_service:performance messages_sent 0 avg_delivery_time 0 errors 0
+
+# Initialize health check status
+# Format: health:{service}
+HSET health:alert_engine status "healthy" last_check 0 uptime 0
+HSET health:api_gateway status "healthy" last_check 0 uptime 0
+HSET health:subscription_service status "healthy" last_check 0 uptime 0
+HSET health:telegram_service status "healthy" last_check 0 uptime 0
+HSET health:database status "healthy" last_check 0 connection_pool 0
+HSET health:redis status "healthy" last_check 0 memory_usage 0
+
+# Set health check expiration (30 seconds)
+EXPIRE health:alert_engine 30
+EXPIRE health:api_gateway 30
+EXPIRE health:subscription_service 30
+EXPIRE health:telegram_service 30
+EXPIRE health:database 30
+EXPIRE health:redis 30
+
+# Initialize feature flags
+# Format: feature_flags:{feature}
+SET feature_flags:user_registration "true"
+SET feature_flags:alert_creation "true"
+SET feature_flags:market_data_updates "true"
+SET feature_flags:notifications "true"
+SET feature_flags:webhooks "true"
+SET feature_flags:api_access "true"
+SET feature_flags:technical_analysis "true"
+SET feature_flags:advanced_alerts "true"
+SET feature_flags:bulk_operations "true"
+SET feature_flags:export_data "true"
+
+# Initialize circuit breaker states
+# Format: circuit_breaker:{service}:{endpoint}
+HSET circuit_breaker:binance:api state "closed" failure_count 0 last_failure 0
+HSET circuit_breaker:coinbase:api state "closed" failure_count 0 last_failure 0
+HSET circuit_breaker:kraken:api state "closed" failure_count 0 last_failure 0
+HSET circuit_breaker:telegram:api state "closed" failure_count 0 last_failure 0
+HSET circuit_breaker:email:service state "closed" failure_count 0 last_failure 0
+
+# Initialize distributed locks
+# Format: lock:{resource}
+# These will be used for distributed locking across services
+
+# Initialize pub/sub channels setup
+# Channels that will be used for inter-service communication:
+# - alert:triggered
+# - market:update
+# - user:subscription:changed
+# - system:shutdown
+# - notification:sent
+# - health:check
+
+# Initialize background job tracking
+# Format: jobs:{type}:{id}
+# Track background jobs and their status
+
+# Initialize audit log cache
+# Format: audit:{userId}:{action}
+# Cache recent user actions for audit purposes
+
+# Initialize IP-based rate limiting
+# Format: rate_limit:ip:{ip_address}
+# Track requests per IP address
+
+# Initialize user activity tracking
+# Format: user_activity:{userId}
+# Track user last activity for session management
+
+# Initialize system configuration cache
+# Format: config:{key}
+SET config:maintenance_mode "false"
+SET config:max_alerts_per_user "500"
+SET config:max_notifications_per_day "10000"
+SET config:alert_check_interval "30000"
+SET config:market_data_update_interval "60000"
+SET config:technical_analysis_interval "300000"
+
+# Set configuration cache expiration (1 hour)
+EXPIRE config:maintenance_mode 3600
+EXPIRE config:max_alerts_per_user 3600
+EXPIRE config:max_notifications_per_day 3600
+EXPIRE config:alert_check_interval 3600
+EXPIRE config:market_data_update_interval 3600
+EXPIRE config:technical_analysis_interval 3600
+
+# Initialize trending symbols cache
+# Format: trending:{type}
+ZADD trending:volume BTCUSDT 1000000 ETHUSDT 800000 ADAUSDT 500000
+ZADD trending:price_change BTCUSDT 5.2 ETHUSDT 3.8 ADAUSDT -2.1
+ZADD trending:alerts BTCUSDT 150 ETHUSDT 120 ADAUSDT 80
+
+# Set trending cache expiration (15 minutes)
+EXPIRE trending:volume 900
+EXPIRE trending:price_change 900
+EXPIRE trending:alerts 900
+
+# Initialize WebSocket connection tracking
+# Format: websocket:connections:{service}
+SET websocket:connections:api_gateway 0
+SET websocket:connections:alert_engine 0
+SET websocket:connections:telegram_service 0
+
+# Initialize error tracking
+# Format: errors:{service}:{error_type}
+HSET errors:alert_engine:processing count 0 last_occurrence 0
+HSET errors:api_gateway:authentication count 0 last_occurrence 0
+HSET errors:subscription_service:payment count 0 last_occurrence 0
+HSET errors:telegram_service:delivery count 0 last_occurrence 0
+
+# Set error tracking expiration (1 hour)
+EXPIRE errors:alert_engine:processing 3600
+EXPIRE errors:api_gateway:authentication 3600
+EXPIRE errors:subscription_service:payment 3600
+EXPIRE errors:telegram_service:delivery 3600
+
+# Initialize cache warming flags
+# Format: cache_warm:{type}
+SET cache_warm:market_data "false"
+SET cache_warm:technical_indicators "false"
+SET cache_warm:user_subscriptions "false"
+SET cache_warm:exchange_status "false"
+
+# Initialize maintenance windows
+# Format: maintenance:{service}
+HSET maintenance:alert_engine enabled "false" start_time 0 end_time 0
+HSET maintenance:api_gateway enabled "false" start_time 0 end_time 0
+HSET maintenance:subscription_service enabled "false" start_time 0 end_time 0
+HSET maintenance:telegram_service enabled "false" start_time 0 end_time 0
+
+# Save the current state
+BGSAVE

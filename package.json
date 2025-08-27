@@ -1,0 +1,64 @@
+{
+  "name": "alert-bot-microservices",
+  "version": "1.0.0",
+  "description": "Alert Bot Microservices Architecture for Telegram Trading Alerts",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:gateway\" \"npm run dev:subscription\" \"npm run dev:telegram\" \"npm run dev:alert-engine\"",
+    "dev:gateway": "cd services/api-gateway && npm run dev",
+    "dev:subscription": "cd services/subscription-service && npm run dev",
+    "dev:telegram": "cd services/telegram-service && npm run dev",
+    "dev:alert-engine": "cd services/alert-engine && npm run dev",
+    "start": "concurrently \"npm run start:gateway\" \"npm run start:subscription\" \"npm run start:telegram\" \"npm run start:alert-engine\"",
+    "start:gateway": "cd services/api-gateway && npm start",
+    "start:subscription": "cd services/subscription-service && npm start",
+    "start:telegram": "cd services/telegram-service && npm start",
+    "start:alert-engine": "cd services/alert-engine && npm start",
+    "test": "jest",
+    "test:unit": "jest --testPathPattern=unit",
+    "test:integration": "jest --testPathPattern=integration",
+    "test:e2e": "jest --testPathPattern=e2e",
+    "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "eslint . --ext .js,.ts --fix",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "trading",
+    "alerts",
+    "microservices",
+    "nodejs",
+    "express",
+    "mongodb",
+    "redis"
+  ],
+  "author": "Alert Bot Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.5",
+    "@types/node": "^20.6.3",
+    "@typescript-eslint/eslint-plugin": "^6.7.2",
+    "@typescript-eslint/parser": "^6.7.2",
+    "concurrently": "^8.2.1",
+    "eslint": "^8.49.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.1",
+    "prettier": "^3.0.3",
+    "supertest": "^6.3.3",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

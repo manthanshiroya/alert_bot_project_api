@@ -1,0 +1,529 @@
+version: '3.8'
+
+services:
+  # =============================================================================
+  # DATABASE SERVICES
+  # =============================================================================
+  
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: alert_bot_mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-admin123}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-alert_bot_dev}
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+      - ./database/init/mongodb:/docker-entrypoint-initdb.d:ro
+      - ./logs/mongodb:/var/log/mongodb
+    networks:
+      - alert_bot_network
+    command: >
+      mongod
+      --auth
+      --bind_ip_all
+      --logpath /var/log/mongodb/mongod.log
+      --logappend
+      --journal
+      --replSet rs0
+    healthcheck:
+      test: |
+        mongosh --eval 'db.runCommand("ping").ok' --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # MongoDB Replica Set Initialization
+  mongodb-init:
+    image: mongo:7.0
+    container_name: alert_bot_mongodb_init
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - alert_bot_network
+    command: >
+      mongosh --host mongodb:27017 --eval '
+        try {
+          rs.initiate({
+            _id: "rs0",
+            members: [
+              { _id: 0, host: "mongodb:27017" }
+            ]
+          });
+          print("Replica set initiated successfully");
+        } catch (e) {
+          print("Replica set already initiated or error:", e);
+        }
+      '
+    restart: "no"
+
+  # Redis Cache and Session Store
+  redis:
+    image: redis:7.2-alpine
+    container_name: alert_bot_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+      - ./database/config/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - ./database/init/redis:/docker-entrypoint-initdb.d:ro
+      - ./logs/redis:/var/log/redis
+    networks:
+      - alert_bot_network
+    command: >
+      redis-server /usr/local/etc/redis/redis.conf
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --logfile /var/log/redis/redis.log
+      --loglevel notice
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Redis Initialization
+  redis-init:
+    image: redis:7.2-alpine
+    container_name: alert_bot_redis_init
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - alert_bot_network
+    volumes:
+      - ./database/init/redis:/scripts:ro
+    command: >
+      sh -c '
+        echo "Waiting for Redis to be ready...";
+        sleep 5;
+        echo "Initializing Redis data structures...";
+        redis-cli -h redis -p 6379 < /scripts/init.redis;
+        echo "Redis initialization completed";
+      '
+    restart: "no"
+
+  # =============================================================================
+  # CORE SERVICES
+  # =============================================================================
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: alert_bot_api_gateway
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${API_GATEWAY_PORT:-3000}
+      MONGO_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-admin123}@mongodb:27017/${MONGO_DATABASE:-alert_bot_dev}?authSource=admin
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
+      RATE_LIMIT_WINDOW: ${RATE_LIMIT_WINDOW:-900000}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-1000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${API_GATEWAY_PORT:-3000}:3000"
+    volumes:
+      - ./logs/api-gateway:/app/logs
+      - ./shared:/app/shared:ro
+    networks:
+      - alert_bot_network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb-init:
+        condition: service_completed_successfully
+      redis-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Subscription Service
+  subscription-service:
+    build:
+      context: ./services/subscription-service
+      dockerfile: Dockerfile
+    container_name: alert_bot_subscription_service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${SUBSCRIPTION_SERVICE_PORT:-3001}
+      MONGO_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-admin123}@mongodb:27017/${MONGO_DATABASE:-alert_bot_dev}?authSource=admin
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
+      EMAIL_SERVICE: ${EMAIL_SERVICE:-gmail}
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASS: ${EMAIL_PASS:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${SUBSCRIPTION_SERVICE_PORT:-3001}:3001"
+    volumes:
+      - ./logs/subscription-service:/app/logs
+      - ./shared:/app/shared:ro
+    networks:
+      - alert_bot_network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb-init:
+        condition: service_completed_successfully
+      redis-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Alert Engine
+  alert-engine:
+    build:
+      context: ./services/alert-engine
+      dockerfile: Dockerfile
+    container_name: alert_bot_alert_engine
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${ALERT_ENGINE_PORT:-3002}
+      MONGO_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-admin123}@mongodb:27017/${MONGO_DATABASE:-alert_bot_dev}?authSource=admin
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
+      BINANCE_API_KEY: ${BINANCE_API_KEY:-}
+      BINANCE_API_SECRET: ${BINANCE_API_SECRET:-}
+      COINBASE_API_KEY: ${COINBASE_API_KEY:-}
+      COINBASE_API_SECRET: ${COINBASE_API_SECRET:-}
+      COINGECKO_API_KEY: ${COINGECKO_API_KEY:-}
+      ALPHA_VANTAGE_API_KEY: ${ALPHA_VANTAGE_API_KEY:-}
+      ALERT_CHECK_INTERVAL: ${ALERT_CHECK_INTERVAL:-30000}
+      MARKET_DATA_UPDATE_INTERVAL: ${MARKET_DATA_UPDATE_INTERVAL:-60000}
+      TECHNICAL_ANALYSIS_INTERVAL: ${TECHNICAL_ANALYSIS_INTERVAL:-300000}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${ALERT_ENGINE_PORT:-3002}:3002"
+    volumes:
+      - ./logs/alert-engine:/app/logs
+      - ./shared:/app/shared:ro
+    networks:
+      - alert_bot_network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb-init:
+        condition: service_completed_successfully
+      redis-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Telegram Service
+  telegram-service:
+    build:
+      context: ./services/telegram-service
+      dockerfile: Dockerfile
+    container_name: alert_bot_telegram_service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${TELEGRAM_SERVICE_PORT:-3003}
+      MONGO_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-admin123}@mongodb:27017/${MONGO_DATABASE:-alert_bot_dev}?authSource=admin
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_WEBHOOK_URL: ${TELEGRAM_WEBHOOK_URL:-}
+      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
+      API_GATEWAY_URL: http://api-gateway:3000
+      SUBSCRIPTION_SERVICE_URL: http://subscription-service:3001
+      ALERT_ENGINE_URL: http://alert-engine:3002
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${TELEGRAM_SERVICE_PORT:-3003}:3003"
+    volumes:
+      - ./logs/telegram-service:/app/logs
+      - ./shared:/app/shared:ro
+    networks:
+      - alert_bot_network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+      subscription-service:
+        condition: service_healthy
+      alert-engine:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # =============================================================================
+  # MONITORING AND ADMIN SERVICES
+  # =============================================================================
+
+  # MongoDB Express (Web-based MongoDB admin interface)
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: alert_bot_mongo_express
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD:-admin123}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-admin123}@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USERNAME:-admin}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD:-admin123}
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_PORT: 27017
+    ports:
+      - "${MONGO_EXPRESS_PORT:-8081}:8081"
+    networks:
+      - alert_bot_network
+    profiles:
+      - dev
+      - debug
+
+  # Redis Commander (Web-based Redis admin interface)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: alert_bot_redis_commander
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_HOSTS: local:redis:6379
+      HTTP_USER: ${REDIS_COMMANDER_USERNAME:-admin}
+      HTTP_PASSWORD: ${REDIS_COMMANDER_PASSWORD:-admin123}
+    ports:
+      - "${REDIS_COMMANDER_PORT:-8082}:8081"
+    networks:
+      - alert_bot_network
+    profiles:
+      - dev
+      - debug
+
+  # Nginx Load Balancer and Reverse Proxy
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: alert_bot_nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    networks:
+      - alert_bot_network
+    depends_on:
+      - api-gateway
+      - subscription-service
+      - alert-engine
+      - telegram-service
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    profiles:
+      - production
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: alert_bot_prometheus
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus_data:/prometheus
+    networks:
+      - alert_bot_network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    profiles:
+      - monitoring
+      - production
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: alert_bot_grafana
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT:-3004}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin123}
+      GF_USERS_ALLOW_SIGN_UP: false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - alert_bot_network
+    depends_on:
+      - prometheus
+    profiles:
+      - monitoring
+      - production
+
+  # =============================================================================
+  # UTILITY SERVICES
+  # =============================================================================
+
+  # Database Backup Service
+  db-backup:
+    image: alpine:3.18
+    container_name: alert_bot_db_backup
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+      - redis
+    environment:
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_PASSWORD: ${MONGO_ROOT_PASSWORD:-admin123}
+      MONGO_DATABASE: ${MONGO_DATABASE:-alert_bot_dev}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      BACKUP_SCHEDULE: ${BACKUP_SCHEDULE:-0 2 * * *}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-7}
+      SLACK_WEBHOOK: ${SLACK_WEBHOOK:-}
+      EMAIL_RECIPIENT: ${EMAIL_RECIPIENT:-}
+    volumes:
+      - ./database/backups:/backups
+      - ./database/scripts/backup.sh:/backup.sh:ro
+    networks:
+      - alert_bot_network
+    command: >
+      sh -c '
+        apk add --no-cache mongodb-tools redis dcron curl;
+        echo "$BACKUP_SCHEDULE /backup.sh" | crontab -;
+        crond -f -l 2;
+      '
+    profiles:
+      - production
+
+  # Log Aggregator
+  fluentd:
+    image: fluent/fluentd:v1.16-debian-1
+    container_name: alert_bot_fluentd
+    restart: unless-stopped
+    ports:
+      - "${FLUENTD_PORT:-24224}:24224"
+      - "${FLUENTD_UDP_PORT:-24224}:24224/udp"
+    volumes:
+      - ./monitoring/fluentd/fluent.conf:/fluentd/etc/fluent.conf:ro
+      - ./logs:/var/log/alert_bot
+    networks:
+      - alert_bot_network
+    profiles:
+      - monitoring
+      - production
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+
+volumes:
+  mongodb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/mongodb
+  
+  mongodb_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/mongodb-config
+  
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/redis
+  
+  prometheus_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/prometheus
+  
+  grafana_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/grafana
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+
+networks:
+  alert_bot_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
