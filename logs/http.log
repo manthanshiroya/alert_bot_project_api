@@ -1,0 +1,228 @@
+{"level":"error","message":"❌ MongoDB connection failed:","timestamp":"2025-08-27 12:23:54:2354"}
+{"level":"warn","message":"⚠️  Server will continue without MongoDB connection","timestamp":"2025-08-27 12:23:54:2354"}
+{"level":"info","message":"✅ Redis Client Connected","timestamp":"2025-08-27 12:23:54:2354"}
+{"level":"info","message":"🔄 Redis Client Ready","timestamp":"2025-08-27 12:23:54:2354"}
+{"level":"info","message":"📊 Redis Connected: localhost:6379","timestamp":"2025-08-27 12:23:54:2354"}
+{"level":"info","message":"🗄️ Redis Database: 0","timestamp":"2025-08-27 12:23:54:2354"}
+{"level":"info","message":"🏓 Redis Ping Successful","timestamp":"2025-08-27 12:23:54:2354"}
+{"level":"warn","message":"⚠️  Running without database connection","timestamp":"2025-08-27 12:23:54:2354"}
+{"level":"info","message":"✅ Redis connection established","timestamp":"2025-08-27 12:23:54:2354"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2025-08-27 12:23:54:2354"}
+{"level":"info","message":"📊 Environment: development","timestamp":"2025-08-27 12:23:54:2354"}
+{"level":"info","message":"🔗 Health check: http://localhost:3000/health","timestamp":"2025-08-27 12:23:54:2354"}
+{"level":"info","message":"📚 API Documentation: http://localhost:3000/api/docs","timestamp":"2025-08-27 12:23:54:2354"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756297449313 - 200 - 4ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:24:09:249"}
+{"level":"http","message":"GET / - 404 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:26:35:2635"}
+{"level":"http","message":"GET / - 404 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:26:36:2636"}
+{"level":"http","message":"GET /health - 200 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:27:28:2728"}
+{"level":"http","message":"GET / - 200 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:27:33:2733"}
+{"level":"info","message":"Closing Redis connection...","timestamp":"2025-08-27 12:27:49:2749"}
+{"level":"error","message":"❌ MongoDB connection failed:","timestamp":"2025-08-27 12:27:51:2751"}
+{"level":"warn","message":"⚠️  Server will continue without MongoDB connection","timestamp":"2025-08-27 12:27:51:2751"}
+{"level":"info","message":"✅ Redis Client Connected","timestamp":"2025-08-27 12:27:51:2751"}
+{"level":"info","message":"🔄 Redis Client Ready","timestamp":"2025-08-27 12:27:51:2751"}
+{"level":"info","message":"📊 Redis Connected: localhost:6379","timestamp":"2025-08-27 12:27:51:2751"}
+{"level":"info","message":"🗄️ Redis Database: 0","timestamp":"2025-08-27 12:27:51:2751"}
+{"level":"info","message":"🏓 Redis Ping Successful","timestamp":"2025-08-27 12:27:51:2751"}
+{"level":"warn","message":"⚠️  Running without database connection","timestamp":"2025-08-27 12:27:51:2751"}
+{"level":"info","message":"✅ Redis connection established","timestamp":"2025-08-27 12:27:51:2751"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2025-08-27 12:27:51:2751"}
+{"level":"info","message":"📊 Environment: development","timestamp":"2025-08-27 12:27:51:2751"}
+{"level":"info","message":"🔗 Health check: http://localhost:3000/health","timestamp":"2025-08-27 12:27:51:2751"}
+{"level":"info","message":"📚 API Documentation: http://localhost:3000/api/docs","timestamp":"2025-08-27 12:27:51:2751"}
+{"level":"error","message":"❌ MongoDB connection failed:","timestamp":"2025-08-27 12:30:50:3050"}
+{"level":"warn","message":"⚠️  Server will continue without MongoDB connection","timestamp":"2025-08-27 12:30:50:3050"}
+{"level":"info","message":"✅ Redis Client Connected","timestamp":"2025-08-27 12:30:50:3050"}
+{"level":"info","message":"🔄 Redis Client Ready","timestamp":"2025-08-27 12:30:50:3050"}
+{"level":"info","message":"📊 Redis Connected: localhost:6379","timestamp":"2025-08-27 12:30:50:3050"}
+{"level":"info","message":"🗄️ Redis Database: 0","timestamp":"2025-08-27 12:30:50:3050"}
+{"level":"info","message":"🏓 Redis Ping Successful","timestamp":"2025-08-27 12:30:50:3050"}
+{"level":"warn","message":"⚠️  Running without database connection","timestamp":"2025-08-27 12:30:50:3050"}
+{"level":"info","message":"✅ Redis connection established","timestamp":"2025-08-27 12:30:50:3050"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2025-08-27 12:30:50:3050"}
+{"level":"info","message":"📊 Environment: development","timestamp":"2025-08-27 12:30:50:3050"}
+{"level":"info","message":"🔗 Health check: http://localhost:3000/health","timestamp":"2025-08-27 12:30:50:3050"}
+{"level":"info","message":"📚 API Documentation: http://localhost:3000/api/docs","timestamp":"2025-08-27 12:30:50:3050"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756297449313 - 304 - 4ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:30:57:3057"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756297449313 - 304 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:30:57:3057"}
+{"level":"http","message":"GET /api/docs?ide_webview_request_time=1756297889119 - 200 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:31:29:3129"}
+{"level":"http","message":"GET /api/docs - 200 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:32:08:328"}
+{"level":"error","message":"❌ MongoDB connection failed:","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"error","message":"🔍 Full error details:","name":"MongoParseError","stack":"MongoParseError: option buffermaxentries is not supported\n    at parseOptions (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\connection_string.js:273:15)\n    at new MongoClient (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\mongo_client.js:66:61)\n    at NativeConnection.createClient (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\lib\\drivers\\node-mongodb-native\\connection.js:343:14)\n    at NativeConnection.openUri (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\lib\\connection.js:1071:34)\n    at Mongoose.connect (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\lib\\mongoose.js:450:15)\n    at connectDB (H:\\nagar bot\\alert_bot_project_api\\src\\config\\database.js:19:33)\n    at startServer (H:\\nagar bot\\alert_bot_project_api\\src\\server.js:265:32)\n    at Object.<anonymous> (H:\\nagar bot\\alert_bot_project_api\\src\\server.js:303:3)\n    at Module._compile (node:internal/modules/cjs/loader:1692:14)\n    at Object..js (node:internal/modules/cjs/loader:1824:10)","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"error","message":"🔗 Attempted connection URI:","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"warn","message":"⚠️  Server will continue without MongoDB connection","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"info","message":"✅ Redis Client Connected","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"info","message":"🔄 Redis Client Ready","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"info","message":"📊 Redis Connected: localhost:6379","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"info","message":"🗄️ Redis Database: 0","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"info","message":"🏓 Redis Ping Successful","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"warn","message":"⚠️  Running without database connection","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"info","message":"✅ Redis connection established","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"info","message":"📊 Environment: development","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"info","message":"🔗 Health check: http://localhost:3000/health","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"info","message":"📚 API Documentation: http://localhost:3000/api/docs","timestamp":"2025-08-27 12:37:50:3750"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756298283585 - 301 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:38:03:383"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756298283585 - 200 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:38:03:383"}
+{"level":"http","message":"GET /swagger-ui-init.js - 200 - 0ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:38:03:383"}
+{"level":"http","message":"GET /swagger-ui.css - 200 - 39ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:38:03:383"}
+{"level":"http","message":"GET /swagger-ui-bundle.js - 200 - 56ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:38:03:383"}
+{"level":"http","message":"GET /swagger-ui-standalone-preset.js - 200 - 101ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:38:03:383"}
+{"level":"error","message":"❌ MongoDB connection failed:","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"error","message":"🔍 Full error details:","name":"MongoParseError","stack":"MongoParseError: option buffermaxentries is not supported\n    at parseOptions (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\connection_string.js:273:15)\n    at new MongoClient (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\mongo_client.js:66:61)\n    at NativeConnection.createClient (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\lib\\drivers\\node-mongodb-native\\connection.js:343:14)\n    at NativeConnection.openUri (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\lib\\connection.js:1071:34)\n    at Mongoose.connect (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\lib\\mongoose.js:450:15)\n    at connectDB (H:\\nagar bot\\alert_bot_project_api\\src\\config\\database.js:19:33)\n    at startServer (H:\\nagar bot\\alert_bot_project_api\\src\\server.js:265:32)\n    at Object.<anonymous> (H:\\nagar bot\\alert_bot_project_api\\src\\server.js:303:3)\n    at Module._compile (node:internal/modules/cjs/loader:1692:14)\n    at Object..js (node:internal/modules/cjs/loader:1824:10)","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"error","message":"🔗 Attempted connection URI:","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"warn","message":"⚠️  Server will continue without MongoDB connection","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"info","message":"✅ Redis Client Connected","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"info","message":"🔄 Redis Client Ready","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"info","message":"📊 Redis Connected: localhost:6379","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"info","message":"🗄️ Redis Database: 0","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"info","message":"🏓 Redis Ping Successful","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"warn","message":"⚠️  Running without database connection","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"info","message":"✅ Redis connection established","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"info","message":"📊 Environment: development","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"info","message":"🔗 Health check: http://localhost:3000/health","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"info","message":"📚 API Documentation: http://localhost:3000/api/docs","timestamp":"2025-08-27 12:42:45:4245"}
+{"level":"error","message":"❌ MongoDB connection failed: option buffermaxentries is not supported","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"error","message":"🔍 Error Name: MongoParseError","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"error","message":"🔍 Error Code: N/A","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"error","message":"🔍 Error CodeName: N/A","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"error","message":"🔗 Attempted connection URI: mongodb://localhost:27017/alert_bot_dev","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"error","message":"🔍 Stack trace: MongoParseError: option buffermaxentries is not supported\n    at parseOptions (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\connection_string.js:273:15)\n    at new MongoClient (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\mongo_client.js:66:61)\n    at NativeConnection.createClient (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\lib\\drivers\\node-mongodb-native\\connection.js:343:14)\n    at NativeConnection.openUri (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\lib\\connection.js:1071:34)\n    at Mongoose.connect (H:\\nagar bot\\alert_bot_project_api\\node_modules\\mongoose\\lib\\mongoose.js:450:15)\n    at connectDB (H:\\nagar bot\\alert_bot_project_api\\src\\config\\database.js:19:33)\n    at startServer (H:\\nagar bot\\alert_bot_project_api\\src\\server.js:265:32)\n    at Object.<anonymous> (H:\\nagar bot\\alert_bot_project_api\\src\\server.js:303:3)\n    at Module._compile (node:internal/modules/cjs/loader:1692:14)\n    at Object..js (node:internal/modules/cjs/loader:1824:10)","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"warn","message":"⚠️  Server will continue without MongoDB connection","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"info","message":"✅ Redis Client Connected","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"info","message":"🔄 Redis Client Ready","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"info","message":"📊 Redis Connected: localhost:6379","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"info","message":"🗄️ Redis Database: 0","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"info","message":"🏓 Redis Ping Successful","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"warn","message":"⚠️  Running without database connection","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"info","message":"✅ Redis connection established","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"info","message":"📊 Environment: development","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"info","message":"🔗 Health check: http://localhost:3000/health","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"info","message":"📚 API Documentation: http://localhost:3000/api/docs","timestamp":"2025-08-27 12:43:16:4316"}
+{"level":"info","message":"✅ MongoDB Connected: localhost","timestamp":"2025-08-27 12:43:55:4355"}
+{"level":"info","message":"📊 Database: alert_bot_dev","timestamp":"2025-08-27 12:43:55:4355"}
+{"level":"info","message":"✅ Redis Client Connected","timestamp":"2025-08-27 12:43:55:4355"}
+{"level":"info","message":"🔄 Redis Client Ready","timestamp":"2025-08-27 12:43:55:4355"}
+{"level":"info","message":"📊 Redis Connected: localhost:6379","timestamp":"2025-08-27 12:43:55:4355"}
+{"level":"info","message":"🗄️ Redis Database: 0","timestamp":"2025-08-27 12:43:55:4355"}
+{"level":"info","message":"🏓 Redis Ping Successful","timestamp":"2025-08-27 12:43:55:4355"}
+{"level":"info","message":"✅ Database connection established","timestamp":"2025-08-27 12:43:55:4355"}
+{"level":"info","message":"✅ Redis connection established","timestamp":"2025-08-27 12:43:55:4355"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2025-08-27 12:43:55:4355"}
+{"level":"info","message":"📊 Environment: development","timestamp":"2025-08-27 12:43:55:4355"}
+{"level":"info","message":"🔗 Health check: http://localhost:3000/health","timestamp":"2025-08-27 12:43:55:4355"}
+{"level":"info","message":"📚 API Documentation: http://localhost:3000/api/docs","timestamp":"2025-08-27 12:43:55:4355"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756298643458 - 301 - 5ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:44:03:443"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756298643458 - 200 - 5ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:44:03:443"}
+{"level":"http","message":"GET /swagger-ui.css - 304 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:44:03:443"}
+{"level":"http","message":"GET /swagger-ui-init.js - 304 - 0ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:44:03:443"}
+{"level":"http","message":"GET /swagger-ui-bundle.js - 304 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:44:03:443"}
+{"level":"http","message":"GET /swagger-ui-standalone-preset.js - 304 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:44:03:443"}
+{"level":"http","message":"GET / - 301 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:46:23:4623"}
+{"level":"http","message":"GET / - 200 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:46:23:4623"}
+{"level":"http","message":"GET /swagger-ui-init.js - 200 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:46:23:4623"}
+{"level":"http","message":"GET /swagger-ui.css - 200 - 17ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:46:23:4623"}
+{"level":"http","message":"GET /swagger-ui-standalone-preset.js - 200 - 22ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:46:23:4623"}
+{"level":"http","message":"GET /swagger-ui-bundle.js - 200 - 78ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:46:23:4623"}
+{"level":"http","message":"GET /favicon-32x32.png - 200 - 10ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:46:23:4623"}
+{"level":"http","message":"GET /favicon-32x32.png - 304 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:46:23:4623"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756299051911 - 301 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:50:51:5051"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756299051911 - 200 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:50:51:5051"}
+{"level":"http","message":"GET /swagger-ui-bundle.js - 304 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:50:52:5052"}
+{"level":"http","message":"GET /swagger-ui.css - 304 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:50:52:5052"}
+{"level":"http","message":"GET /swagger-ui-init.js - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:50:52:5052"}
+{"level":"http","message":"GET /swagger-ui-standalone-preset.js - 304 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:50:52:5052"}
+{"level":"info","message":"Closing Redis connection...","timestamp":"2025-08-27 12:51:06:516"}
+{"level":"info","message":"✅ MongoDB Connected: localhost","timestamp":"2025-08-27 12:51:08:518"}
+{"level":"info","message":"📊 Database: alert_bot_dev","timestamp":"2025-08-27 12:51:08:518"}
+{"level":"info","message":"✅ Redis Client Connected","timestamp":"2025-08-27 12:51:08:518"}
+{"level":"info","message":"🔄 Redis Client Ready","timestamp":"2025-08-27 12:51:08:518"}
+{"level":"info","message":"📊 Redis Connected: localhost:6379","timestamp":"2025-08-27 12:51:08:518"}
+{"level":"info","message":"🗄️ Redis Database: 0","timestamp":"2025-08-27 12:51:08:518"}
+{"level":"info","message":"🏓 Redis Ping Successful","timestamp":"2025-08-27 12:51:08:518"}
+{"level":"info","message":"✅ Database connection established","timestamp":"2025-08-27 12:51:08:518"}
+{"level":"info","message":"✅ Redis connection established","timestamp":"2025-08-27 12:51:08:518"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2025-08-27 12:51:08:518"}
+{"level":"info","message":"📊 Environment: development","timestamp":"2025-08-27 12:51:08:518"}
+{"level":"info","message":"🔗 Health check: http://localhost:3000/health","timestamp":"2025-08-27 12:51:08:518"}
+{"level":"info","message":"📚 API Documentation: http://localhost:3000/api/docs","timestamp":"2025-08-27 12:51:08:518"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756299051911 - 200 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:09:519"}
+{"level":"http","message":"GET /swagger-ui-init.js - 200 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:09:519"}
+{"level":"http","message":"GET /swagger-ui.css - 200 - 9ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:09:519"}
+{"level":"http","message":"GET /swagger-ui-standalone-preset.js - 200 - 11ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:09:519"}
+{"level":"http","message":"GET /swagger-ui-bundle.js - 200 - 36ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:09:519"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756299051911 - 200 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:43:5143"}
+{"level":"http","message":"GET /swagger-ui-init.js - 200 - 0ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:43:5143"}
+{"level":"http","message":"GET /swagger-ui.css - 200 - 6ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:43:5143"}
+{"level":"http","message":"GET /swagger-ui-standalone-preset.js - 200 - 6ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:43:5143"}
+{"level":"http","message":"GET /swagger-ui-bundle.js - 200 - 39ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:43:5143"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756299107081 - 200 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:47:5147"}
+{"level":"http","message":"GET /swagger-ui-init.js - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:47:5147"}
+{"level":"http","message":"GET /swagger-ui.css - 304 - 4ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:47:5147"}
+{"level":"http","message":"GET /swagger-ui-bundle.js - 304 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:47:5147"}
+{"level":"http","message":"GET /swagger-ui-standalone-preset.js - 304 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:51:47:5147"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756299196993 - 301 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:16:5316"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756299196993 - 200 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:17:5317"}
+{"level":"http","message":"GET /swagger-ui.css - 304 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:17:5317"}
+{"level":"http","message":"GET /swagger-ui-init.js - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:17:5317"}
+{"level":"http","message":"GET /swagger-ui-bundle.js - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:17:5317"}
+{"level":"http","message":"GET /swagger-ui-standalone-preset.js - 304 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:17:5317"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756299199495 - 301 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:19:5319"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756299199495 - 200 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:19:5319"}
+{"level":"http","message":"GET /swagger-ui-init.js - 304 - 0ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:19:5319"}
+{"level":"http","message":"GET /swagger-ui.css - 304 - 4ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:19:5319"}
+{"level":"http","message":"GET /swagger-ui-bundle.js - 304 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:19:5319"}
+{"level":"http","message":"GET /swagger-ui-standalone-preset.js - 304 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:19:5319"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756299199495 - 200 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:25:5325"}
+{"level":"http","message":"GET /swagger-ui-init.js - 200 - 0ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:25:5325"}
+{"level":"http","message":"GET /swagger-ui.css - 200 - 6ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:25:5325"}
+{"level":"http","message":"GET /swagger-ui-standalone-preset.js - 200 - 7ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:25:5325"}
+{"level":"http","message":"GET /swagger-ui-bundle.js - 200 - 49ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:25:5325"}
+{"level":"info","message":"Closing Redis connection...","timestamp":"2025-08-27 12:53:32:5332"}
+{"level":"info","message":"✅ MongoDB Connected: localhost","timestamp":"2025-08-27 12:53:34:5334"}
+{"level":"info","message":"📊 Database: alert_bot_dev","timestamp":"2025-08-27 12:53:34:5334"}
+{"level":"info","message":"✅ Redis Client Connected","timestamp":"2025-08-27 12:53:34:5334"}
+{"level":"info","message":"🔄 Redis Client Ready","timestamp":"2025-08-27 12:53:34:5334"}
+{"level":"info","message":"📊 Redis Connected: localhost:6379","timestamp":"2025-08-27 12:53:34:5334"}
+{"level":"info","message":"🗄️ Redis Database: 0","timestamp":"2025-08-27 12:53:34:5334"}
+{"level":"info","message":"🏓 Redis Ping Successful","timestamp":"2025-08-27 12:53:34:5334"}
+{"level":"info","message":"✅ Database connection established","timestamp":"2025-08-27 12:53:34:5334"}
+{"level":"info","message":"✅ Redis connection established","timestamp":"2025-08-27 12:53:34:5334"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2025-08-27 12:53:34:5334"}
+{"level":"info","message":"📊 Environment: development","timestamp":"2025-08-27 12:53:34:5334"}
+{"level":"info","message":"🔗 Health check: http://localhost:3000/health","timestamp":"2025-08-27 12:53:34:5334"}
+{"level":"info","message":"📚 API Documentation: http://localhost:3000/api/docs","timestamp":"2025-08-27 12:53:34:5334"}
+{"level":"http","message":"GET / - 304 - 5ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:53:36:5336"}
+{"level":"http","message":"GET /swagger-ui.css - 304 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:53:36:5336"}
+{"level":"http","message":"GET /swagger-ui-bundle.js - 304 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:53:36:5336"}
+{"level":"http","message":"GET /swagger-ui-standalone-preset.js - 304 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:53:36:5336"}
+{"level":"http","message":"GET /swagger-ui-init.js - 200 - 0ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:53:36:5336"}
+{"level":"http","message":"GET /favicon-32x32.png - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:53:36:5336"}
+{"level":"http","message":"GET /favicon-32x32.png - 304 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:53:37:5337"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756299199495 - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:40:5340"}
+{"level":"http","message":"GET /?ide_webview_request_time=1756299199495 - 304 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:40:5340"}
+{"level":"http","message":"GET /swagger-ui.css - 304 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:41:5341"}
+{"level":"http","message":"GET /swagger-ui-init.js - 200 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:41:5341"}
+{"level":"http","message":"GET /swagger-ui-bundle.js - 304 - 5ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:41:5341"}
+{"level":"http","message":"GET /swagger-ui-standalone-preset.js - 304 - 4ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Trae/1.100.3 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36","timestamp":"2025-08-27 12:53:41:5341"}
+{"level":"http","message":"POST /register - 501 - 3ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 12:55:10:5510"}
+{"level":"http","message":"GET / - 304 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:05:75"}
+{"level":"http","message":"GET /swagger-ui.css - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:05:75"}
+{"level":"http","message":"GET /swagger-ui-bundle.js - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:05:75"}
+{"level":"http","message":"GET /swagger-ui-init.js - 304 - 0ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:05:75"}
+{"level":"http","message":"GET /swagger-ui-standalone-preset.js - 304 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:05:75"}
+{"level":"http","message":"GET /favicon-32x32.png - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:05:75"}
+{"level":"http","message":"GET /favicon-32x32.png - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:05:75"}
+{"level":"http","message":"POST /register - 501 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:11:711"}
+{"level":"http","message":"POST /register - 501 - 0ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:24:724"}
+{"level":"http","message":"GET / - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:51:751"}
+{"level":"http","message":"GET /swagger-ui.css - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:51:751"}
+{"level":"http","message":"GET /swagger-ui-bundle.js - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:51:751"}
+{"level":"http","message":"GET /swagger-ui-init.js - 304 - 0ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:51:751"}
+{"level":"http","message":"GET /swagger-ui-standalone-preset.js - 304 - 2ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:51:751"}
+{"level":"http","message":"GET /favicon-32x32.png - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:51:751"}
+{"level":"http","message":"GET /favicon-32x32.png - 304 - 1ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:51:751"}
+{"level":"http","message":"POST /register - 501 - 0ms - ::1 - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","timestamp":"2025-08-27 13:07:55:755"}
+{"level":"info","message":"Closing Redis connection...","timestamp":"2025-08-27 13:08:06:86"}

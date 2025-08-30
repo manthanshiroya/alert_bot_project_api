@@ -1,333 +1,229 @@
-# Alert Bot Project - Requirements & Planning Document
+# TradingView Alert Distribution System - Project Requirements
 
-## Project Overview
+## 1. Project Overview
 
-A microservices-based trading alert system that integrates TradingView webhooks with Telegram bot notifications, featuring subscription management, dynamic chart configuration, and admin-controlled alert conditions.
+### 1.1 System Purpose
+The TradingView Alert Distribution System is a comprehensive platform that receives trading alerts from TradingView webhooks, processes them through advanced trade management logic, and distributes them to subscribers via Telegram based on their subscription plans and preferences.
 
-## 1. FUNCTIONAL REQUIREMENTS
+### 1.2 Core Business Model
+- **Alert Reception**: Receive real-time alerts from TradingView webhooks
+- **Trade Management**: Advanced sequential trade tracking with position management
+- **Subscription System**: Flexible subscription plans with manual payment approval
+- **Alert Distribution**: Intelligent filtering and delivery via Telegram bot
+- **User Management**: Subscription-based access control with preference management
 
-### 1.1 User Management
+## 2. Functional Requirements
 
-**FR-001: User Registration**
-- Users register with Telegram ID (no email required)
-- System validates Telegram ID uniqueness
-- User profile creation with basic information
-- Support for multiple subscription per user
+### 2.1 Alert Processing System
 
-**FR-002: User Authentication**
-- Telegram ID-based authentication for bot access
-- JWT token-based authentication for API access
-- Session management and token refresh
+#### 2.1.1 Webhook Integration
+- **REQ-001**: System MUST receive TradingView webhook alerts in real-time
+- **REQ-002**: System MUST parse alert data including symbol, timeframe, strategy, signal type, prices
+- **REQ-003**: System MUST handle both entry signals (BUY/SELL) and exit signals (TP_HIT/SL_HIT)
+- **REQ-004**: System MUST process alerts with <500ms latency from reception to distribution
 
-**FR-003: User Profile Management**
-- View user subscription status
-- Update user preferences
-- View alert history
-- Manage notification settings
+#### 2.1.2 Trade Management Logic
+- **REQ-005**: System MUST assign sequential trade numbers to tradeable alerts
+- **REQ-006**: System MUST maintain maximum 2-3 open trades per alert configuration
+- **REQ-007**: System MUST implement same-type signal replacement (BUY replaces BUY, SELL replaces SELL)
+- **REQ-008**: System MUST allow opposite signals to coexist (BUY and SELL simultaneously)
+- **REQ-009**: System MUST automatically close trades on TP/SL hits with P&L calculation
+- **REQ-010**: System MUST notify users of trade replacements as potential false signals
 
-### 1.2 Subscription Management
+### 2.2 Subscription Management
 
-**FR-004: Subscription Plans**
-- Admin creates subscription plans with features
-- Plans include chart access, symbol permissions, timeframes
-- Pricing and validity period configuration
-- Plan status management (active/inactive)
+#### 2.2.1 Subscription Plans
+- **REQ-011**: Admin MUST be able to create unlimited subscription plans
+- **REQ-012**: Each subscription MUST have configurable duration (1, 3, 4 months, etc.)
+- **REQ-013**: Each subscription MUST contain multiple alert configurations
+- **REQ-014**: System MUST track subscription expiry and send renewal notifications
 
-**FR-005: Subscription Request Flow**
-- User submits subscription request with payment proof
-- Payment screenshot upload functionality
-- Admin approval/rejection workflow
-- Automated status updates upon approval
+#### 2.2.2 Alert Configurations
+- **REQ-015**: Admin MUST be able to create alert configs with Symbol + Timeframe + Strategy
+- **REQ-016**: Each alert config MUST have configurable trade management settings
+- **REQ-017**: Alert configs MUST be assignable to multiple subscription plans
+- **REQ-018**: Users MUST be able to enable/disable individual alert configs within their subscription
 
-**FR-006: Subscription Validation**
-- Real-time subscription status checking
-- Expiry date validation
-- Multi-subscription support per user
-- Grace period handling for expired subscriptions
+#### 2.2.3 Payment Processing
+- **REQ-019**: System MUST generate UPI QR codes for subscription payments
+- **REQ-020**: Admin MUST manually approve payments after verification
+- **REQ-021**: System MUST send email confirmations upon subscription activation
+- **REQ-022**: System MUST automatically disable alerts for expired subscriptions
 
-### 1.3 Chart & Symbol Management
+### 2.3 Telegram Bot System
 
-**FR-007: Dynamic Chart Configuration**
-- Admin adds/removes trading charts
-- Chart-symbol-timeframe associations
-- Chart status management
-- TradingView chart ID mapping
+#### 2.3.1 Bot Interface
+- **REQ-023**: System MUST use single Telegram bot for all interactions
+- **REQ-024**: Bot MUST provide menu-driven UI (not command-based)
+- **REQ-025**: Bot MUST show only subscription-relevant content to users
+- **REQ-026**: Bot MUST allow users to manage alert preferences
 
-**FR-008: Symbol Management**
-- Add new trading symbols (BTC, ETH, etc.)
-- Symbol categorization (crypto, forex, stocks)
-- Symbol-subscription plan mapping
-- Market hours configuration
+#### 2.3.2 Alert Delivery
+- **REQ-027**: System MUST deliver alerts only to active subscribers
+- **REQ-028**: System MUST filter alerts based on user preferences
+- **REQ-029**: System MUST format alerts with trade context and details
+- **REQ-030**: System MUST notify users of trade openings, closures, and replacements
 
-**FR-009: Timeframe Management**
-- Support multiple timeframes (1min, 5min, 15min, 1h, 4h, 1d)
-- Timeframe-subscription restrictions
-- Custom timeframe definitions
+### 2.4 Admin Panel
 
-### 1.4 Alert System
+#### 2.4.1 Subscription Management
+- **REQ-031**: Admin MUST be able to create/edit subscription plans
+- **REQ-032**: Admin MUST be able to manage alert configurations
+- **REQ-033**: Admin MUST be able to approve/reject payments
+- **REQ-034**: Admin MUST be able to view user subscription status
 
-**FR-010: TradingView Webhook Integration**
-- Receive POST webhooks from TradingView
-- Parse JSON alert payloads
-- Validate webhook authenticity
-- Handle webhook failures and retries
+#### 2.4.2 Trade Monitoring
+- **REQ-035**: Admin MUST be able to view all open trades across users
+- **REQ-036**: Admin MUST be able to monitor trade performance analytics
+- **REQ-037**: Admin MUST be able to track alert delivery status
+- **REQ-038**: Admin MUST be able to view false signal patterns
 
-**FR-011: Dynamic Alert Conditions**
-- Rule-based alert filtering
-- Symbol-subscription matching
-- User preference validation
-- Priority-based alert routing
+### 2.5 User Management
 
-**FR-012: Alert Distribution**
-- Send alerts to Telegram users
-- Message formatting and customization
-- Delivery status tracking
-- Failed delivery handling
+#### 2.5.1 User Registration
+- **REQ-039**: Users MUST register via website for subscription purchase
+- **REQ-040**: Users MUST provide email and Telegram details
+- **REQ-041**: System MUST link Telegram accounts to user profiles
 
-### 1.5 Telegram Bot Features
+#### 2.5.2 User Preferences
+- **REQ-042**: Users MUST be able to enable/disable alerts via Telegram
+- **REQ-043**: Users MUST be able to view their active trades
+- **REQ-044**: Users MUST be able to view trade performance history
 
-**FR-013: Bot Access Control**
-- Subscription-based feature access
-- Menu generation based on user permissions
-- Command handling and validation
-- User interaction logging
+## 3. Non-Functional Requirements
 
-**FR-014: Bot Commands**
-- /start - User registration
-- /subscriptions - View active subscriptions
-- /preferences - Configure alert preferences
-- /history - View alert history
-- /help - Bot usage instructions
+### 3.1 Performance Requirements
+- **REQ-045**: System MUST process alerts within 500ms of webhook reception
+- **REQ-046**: System MUST support concurrent processing of multiple alerts
+- **REQ-047**: System MUST handle 1000+ concurrent users
+- **REQ-048**: Database queries MUST execute within 100ms average
 
-**FR-015: Interactive Menus**
-- Inline keyboard for subscription management
-- Preference configuration interface
-- Alert acknowledgment system
+### 3.2 Reliability Requirements
+- **REQ-049**: System MUST have 99.9% uptime
+- **REQ-050**: System MUST implement automatic failover for critical components
+- **REQ-051**: System MUST maintain data consistency during high load
+- **REQ-052**: System MUST implement comprehensive error handling
 
-### 1.6 Admin Management
+### 3.3 Security Requirements
+- **REQ-053**: System MUST validate all webhook requests from TradingView
+- **REQ-054**: System MUST secure admin panel with authentication
+- **REQ-055**: System MUST protect user data and payment information
+- **REQ-056**: System MUST implement rate limiting for API endpoints
 
-**FR-016: Admin Dashboard APIs**
-- User management interface
-- Subscription approval workflow
-- System monitoring and analytics
-- Configuration management
+### 3.4 Scalability Requirements
+- **REQ-057**: System MUST be horizontally scalable
+- **REQ-058**: Database MUST support sharding for large datasets
+- **REQ-059**: System MUST implement caching for frequently accessed data
+- **REQ-060**: System MUST support load balancing across multiple instances
 
-**FR-017: Condition Builder**
-- Visual rule creation interface
-- Dropdown-based condition configuration
-- Real-time condition testing
-- Template management
+## 4. Technical Constraints
 
-**FR-018: Bulk Operations**
-- Bulk user management
-- Mass subscription updates
-- Broadcast messaging
-- Data export functionality
+### 4.1 Technology Stack
+- **Backend**: Node.js with Express.js framework
+- **Database**: MongoDB for primary data, Redis for caching
+- **Messaging**: Telegram Bot API
+- **Frontend**: Simple HTML/CSS/JavaScript for admin panel and user website
+- **Deployment**: Docker containers
 
-## 2. NON-FUNCTIONAL REQUIREMENTS
+### 4.2 Integration Requirements
+- **TradingView**: Webhook integration for alert reception
+- **Telegram**: Bot API for message delivery and user interaction
+- **Email**: SMTP service for notifications
+- **Payment**: UPI QR code generation
 
-### 2.1 Performance
+### 4.3 Data Requirements
+- **Data Retention**: Trade data for 1 year, user data indefinitely
+- **Backup**: Daily automated backups with 30-day retention
+- **Recovery**: RTO < 4 hours, RPO < 1 hour
 
-**NFR-001: Response Time**
-- API response time < 200ms for 95% of requests
-- Webhook processing < 100ms
-- Telegram message delivery < 2 seconds
+## 5. Business Rules
 
-**NFR-002: Throughput**
-- Support 1000+ concurrent users
-- Handle 10,000+ alerts per hour
-- Process 100+ webhook requests per minute
+### 5.1 Trade Management Rules
+- **BR-001**: Only same-type signals can replace existing trades
+- **BR-002**: Maximum 3 open trades per alert configuration
+- **BR-003**: TP hit results in profitable trade closure
+- **BR-004**: SL hit results in loss trade closure
+- **BR-005**: Trade replacement indicates potential false signal
 
-**NFR-003: Scalability**
-- Horizontal scaling capability
-- Auto-scaling based on load
-- Database connection pooling
+### 5.2 Subscription Rules
+- **BR-006**: Users can only receive alerts for active subscriptions
+- **BR-007**: Subscription access expires automatically on end date
+- **BR-008**: Payment approval is required for subscription activation
+- **BR-009**: Users receive renewal notifications 7 days before expiry
 
-### 2.2 Reliability
+### 5.3 Alert Distribution Rules
+- **BR-010**: Alerts are filtered by subscription type and user preferences
+- **BR-011**: Users only see symbols relevant to their subscription
+- **BR-012**: Trade notifications include full context and P&L
+- **BR-013**: Alert delivery must be real-time with minimal latency
 
-**NFR-004: Availability**
-- 99.9% uptime SLA
-- Graceful degradation during failures
-- Health check endpoints
+## 6. User Stories
 
-**NFR-005: Data Consistency**
-- ACID compliance for critical operations
-- Data backup and recovery
-- Transaction rollback capabilities
+### 6.1 Admin User Stories
+- **US-001**: As an admin, I want to create subscription plans so that I can offer different trading strategies
+- **US-002**: As an admin, I want to configure alert settings so that I can control what alerts are sent
+- **US-003**: As an admin, I want to approve payments so that I can verify legitimate subscriptions
+- **US-004**: As an admin, I want to monitor trade performance so that I can track system effectiveness
 
-**NFR-006: Error Handling**
-- Comprehensive error logging
-- Retry mechanisms for failed operations
-- Circuit breaker pattern implementation
+### 6.2 Subscriber User Stories
+- **US-005**: As a subscriber, I want to purchase subscriptions so that I can receive trading alerts
+- **US-006**: As a subscriber, I want to customize alert preferences so that I receive relevant signals
+- **US-007**: As a subscriber, I want to view my active trades so that I can track my positions
+- **US-008**: As a subscriber, I want to receive trade notifications so that I can act on signals
 
-### 2.3 Security
+## 7. Acceptance Criteria
 
-**NFR-007: Authentication & Authorization**
-- JWT token-based authentication
-- Role-based access control (RBAC)
-- API rate limiting
+### 7.1 System Integration
+- TradingView webhooks successfully trigger alert processing
+- Telegram bot responds to user interactions within 2 seconds
+- Admin panel allows complete system configuration
+- Payment flow works end-to-end with email confirmations
 
-**NFR-008: Data Protection**
-- Encryption at rest and in transit
-- PII data anonymization
-- Secure webhook validation
+### 7.2 Trade Management
+- Sequential trade numbering works correctly
+- Same-type signal replacement functions as specified
+- TP/SL hit detection and closure works accurately
+- P&L calculations are correct
 
-**NFR-009: API Security**
-- Input validation and sanitization
-- SQL injection prevention
-- CORS configuration
+### 7.3 User Experience
+- Users can easily navigate Telegram bot menus
+- Alert preferences can be modified in real-time
+- Subscription status is clearly visible
+- Trade notifications are informative and timely
 
-### 2.4 Maintainability
-
-**NFR-010: Code Quality**
-- 80%+ test coverage
-- ESLint and Prettier configuration
-- Code documentation standards
-
-**NFR-011: Monitoring**
-- Application performance monitoring
-- Error tracking and alerting
-- Business metrics dashboard
-
-**NFR-012: Documentation**
-- Comprehensive API documentation (Swagger)
-- Deployment guides
-- Troubleshooting documentation
-
-## 3. TECHNICAL CONSTRAINTS
-
-### 3.1 Technology Stack
-- **Backend**: Node.js with Express.js
-- **Database**: MongoDB with Mongoose ODM
-- **Message Queue**: Redis for caching and queues
-- **Bot Framework**: node-telegram-bot-api
-- **Documentation**: Swagger/OpenAPI 3.0
-
-### 3.2 Integration Requirements
-- **TradingView**: Webhook integration
-- **Telegram**: Bot API integration
-- **Payment**: Manual verification (no automated payment gateway)
-
-### 3.3 Deployment Environment
-- **Platform**: Docker containers
-- **Orchestration**: Docker Compose (development), Kubernetes (production)
-- **CI/CD**: GitHub Actions or similar
-
-## 4. BUSINESS RULES
-
-### 4.1 Subscription Rules
-- Users can have multiple active subscriptions
-- Subscription approval requires manual admin verification
-- Expired subscriptions have 7-day grace period
-- Refunds require admin approval
-
-### 4.2 Alert Rules
-- Alerts are filtered based on user subscription and preferences
-- Maximum 50 alerts per user per hour
-- High-priority alerts bypass rate limiting
-- Alert history retained for 90 days
-
-### 4.3 Access Rules
-- Admin users have full system access
-- Regular users access only their own data
-- Bot access requires active subscription
-- API access requires valid authentication
-
-## 5. DATA REQUIREMENTS
-
-### 5.1 Data Entities
-- Users (Telegram ID, subscriptions, preferences)
-- Subscriptions (plans, features, pricing)
-- Charts (symbols, timeframes, conditions)
-- Alerts (payloads, delivery status, history)
-- Conditions (rules, actions, priorities)
-
-### 5.2 Data Retention
-- User data: Indefinite (until account deletion)
-- Alert history: 90 days
-- System logs: 30 days
-- Payment proofs: 1 year
-
-### 5.3 Data Backup
-- Daily automated backups
-- Point-in-time recovery capability
-- Cross-region backup replication
-
-## 6. COMPLIANCE REQUIREMENTS
-
-### 6.1 Data Privacy
-- GDPR compliance for EU users
-- Data anonymization capabilities
-- User consent management
-
-### 6.2 Financial Compliance
-- Payment record retention
-- Audit trail maintenance
-- Anti-money laundering considerations
-
-## 7. SUCCESS CRITERIA
-
-### 7.1 Technical Success
-- All functional requirements implemented
-- Performance benchmarks met
-- Security requirements satisfied
-- 95%+ test coverage achieved
-
-### 7.2 Business Success
-- User registration and subscription flow working
-- Alert delivery accuracy > 99%
-- Admin approval workflow efficiency
-- System scalability demonstrated
-
-## 8. ASSUMPTIONS & DEPENDENCIES
+## 8. Assumptions and Dependencies
 
 ### 8.1 Assumptions
-- TradingView webhooks are reliable
-- Telegram API has 99%+ uptime
-- Users have stable internet connectivity
-- Payment verification is manual process
+- TradingView webhook format remains consistent
+- Telegram Bot API maintains current functionality
+- Users have basic understanding of trading concepts
+- Admin will actively manage subscription approvals
 
 ### 8.2 Dependencies
-- TradingView webhook configuration
-- Telegram Bot API access
-- MongoDB hosting service
-- SSL certificate for HTTPS
+- TradingView webhook service availability
+- Telegram Bot API service availability
+- MongoDB and Redis service availability
+- SMTP service for email notifications
+- UPI payment system for QR code generation
 
-## 9. RISKS & MITIGATION
+## 9. Success Metrics
 
-### 9.1 Technical Risks
-- **Risk**: TradingView webhook failures
-- **Mitigation**: Retry mechanisms and fallback alerts
+### 9.1 Technical Metrics
+- Alert processing latency < 500ms
+- System uptime > 99.9%
+- Database query performance < 100ms average
+- Zero data loss incidents
 
-- **Risk**: Telegram API rate limiting
-- **Mitigation**: Message queuing and throttling
+### 9.2 Business Metrics
+- User subscription conversion rate
+- Alert delivery success rate > 99%
+- User engagement with Telegram bot
+- Trade signal accuracy and profitability
 
-- **Risk**: Database performance issues
-- **Mitigation**: Indexing optimization and caching
+### 9.3 User Satisfaction Metrics
+- User retention rate
+- Support ticket volume
+- User feedback scores
+- Feature adoption rates
 
-### 9.2 Business Risks
-- **Risk**: Manual payment verification delays
-- **Mitigation**: Clear SLA and admin notification system
-
-- **Risk**: User subscription confusion
-- **Mitigation**: Clear documentation and support system
-
-## 10. ACCEPTANCE CRITERIA
-
-### 10.1 Functional Acceptance
-- [ ] User can register with Telegram ID
-- [ ] Admin can create and manage subscription plans
-- [ ] Payment verification workflow works end-to-end
-- [ ] TradingView webhooks trigger appropriate alerts
-- [ ] Telegram bot responds correctly to user commands
-- [ ] Alert filtering works based on subscriptions and preferences
-
-### 10.2 Technical Acceptance
-- [ ] All APIs documented in Swagger
-- [ ] Microservices communicate correctly
-- [ ] Database schema supports all requirements
-- [ ] Error handling covers edge cases
-- [ ] Performance benchmarks met
-- [ ] Security requirements implemented
-
-This requirements document serves as the foundation for the phase-wise development plan and technical implementation.
+This document serves as the foundation for the TradingView Alert Distribution System development and will be updated as requirements evolve during the project lifecycle.

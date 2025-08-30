@@ -1,1877 +1,1141 @@
-# Alert Bot Project - API Documentation
+# TradingView Alert Distribution System - API Documentation
 
-## Overview
+## 1. API Overview
 
-This document provides comprehensive API documentation for the Alert Bot microservices architecture. The system follows RESTful API principles with OpenAPI 3.0 specification.
+### 1.1 Base Information
+- **Base URL**: `https://api.tradingalerts.com/v1`
+- **Protocol**: HTTPS only
+- **Content Type**: `application/json`
+- **Authentication**: JWT Bearer tokens, API Keys
+- **Rate Limiting**: Implemented per endpoint
+- **API Version**: v1
 
-## API Gateway Configuration
+### 1.2 Response Format
+All API responses follow a consistent structure:
 
-### Base URLs
-```yaml
-production: https://api.alertbot.com
-development: http://localhost:3000
-staging: https://staging-api.alertbot.com
-```
-
-### Global Headers
-```yaml
-Content-Type: application/json
-Authorization: Bearer {jwt_token}
-X-API-Key: {api_key} # For webhook endpoints
-X-Request-ID: {uuid} # For request tracing
-```
-
-## Authentication
-
-### JWT Token Structure
 ```json
 {
-  "user_id": "507f1f77bcf86cd799439011",
-  "telegram_id": "123456789",
-  "role": "user",
-  "permissions": ["read:subscriptions", "write:preferences"],
-  "iat": 1640995200,
-  "exp": 1641081600
+  "success": true,
+  "data": {},
+  "message": "Operation completed successfully",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "requestId": "req_123456789"
 }
 ```
 
-### API Key Authentication
-```yaml
-header: X-API-Key
-format: "ak_" + base64(32_random_bytes)
-example: ak_dGVzdF9hcGlfa2V5XzEyMzQ1Njc4OTA
-```
-
-## Subscription Service API
-
-### OpenAPI Specification
-
-```yaml
-openapi: 3.0.3
-info:
-  title: Alert Bot Subscription Service API
-  description: Core business logic API for user and subscription management
-  version: 1.0.0
-  contact:
-    name: Alert Bot Support
-    email: support@alertbot.com
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
-
-servers:
-  - url: https://api.alertbot.com/api/v1
-    description: Production server
-  - url: http://localhost:3001/api/v1
-    description: Development server
-
-security:
-  - BearerAuth: []
-  - ApiKeyAuth: []
-
-components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
-
-  schemas:
-    User:
-      type: object
-      required:
-        - telegram_id
-        - first_name
-      properties:
-        _id:
-          type: string
-          format: objectid
-          example: "507f1f77bcf86cd799439011"
-        telegram_id:
-          type: string
-          example: "123456789"
-          description: Unique Telegram user ID
-        username:
-          type: string
-          example: "john_doe"
-          nullable: true
-        first_name:
-          type: string
-          example: "John"
-        last_name:
-          type: string
-          example: "Doe"
-          nullable: true
-        subscriptions:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserSubscription'
-        status:
-          type: string
-          enum: [active, inactive, banned]
-          default: active
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-
-    UserSubscription:
-      type: object
-      properties:
-        subscription_id:
-          type: string
-          format: objectid
-        plan_id:
-          type: string
-          format: objectid
-        status:
-          type: string
-          enum: [pending, active, expired, cancelled]
-        start_date:
-          type: string
-          format: date-time
-        end_date:
-          type: string
-          format: date-time
-        payment_proof:
-          type: string
-          format: uri
-          description: URL to payment proof image
-        preferences:
-          $ref: '#/components/schemas/UserPreferences'
-
-    UserPreferences:
-      type: object
-      properties:
-        symbols:
-          type: array
-          items:
-            type: string
-          example: ["BTC", "ETH", "AAPL"]
-        timeframes:
-          type: array
-          items:
-            type: string
-            enum: ["1min", "5min", "15min", "30min", "1h", "4h", "1d"]
-          example: ["5min", "1h"]
-        alert_types:
-          type: array
-          items:
-            type: string
-          example: ["buy_signal", "sell_signal", "price_alert"]
-
-    SubscriptionPlan:
-      type: object
-      required:
-        - name
-        - price
-        - duration_days
-      properties:
-        _id:
-          type: string
-          format: objectid
-        name:
-          type: string
-          example: "Premium Plan"
-        description:
-          type: string
-          example: "Access to premium charts and alerts"
-        features:
-          type: array
-          items:
-            $ref: '#/components/schemas/PlanFeature'
-        charts:
-          type: array
-          items:
-            type: string
-            format: objectid
-          description: Array of chart IDs included in this plan
-        symbols:
-          type: array
-          items:
-            type: string
-          example: ["BTC", "ETH", "AAPL"]
-        timeframes:
-          type: array
-          items:
-            type: string
-          example: ["5min", "1h", "1d"]
-        price:
-          $ref: '#/components/schemas/Price'
-        duration_days:
-          type: integer
-          example: 30
-        max_alerts_per_hour:
-          type: integer
-          default: 50
-        status:
-          type: string
-          enum: [active, inactive]
-          default: active
-        created_at:
-          type: string
-          format: date-time
-
-    PlanFeature:
-      type: object
-      properties:
-        name:
-          type: string
-          example: "Real-time alerts"
-        description:
-          type: string
-          example: "Receive alerts within 5 seconds"
-        enabled:
-          type: boolean
-          default: true
-
-    Price:
-      type: object
-      required:
-        - amount
-        - currency
-      properties:
-        amount:
-          type: number
-          format: float
-          example: 29.99
-        currency:
-          type: string
-          example: "USD"
-          enum: ["USD", "EUR", "GBP"]
-
-    Chart:
-      type: object
-      required:
-        - name
-        - symbol
-        - timeframe
-      properties:
-        _id:
-          type: string
-          format: objectid
-        name:
-          type: string
-          example: "BTC 5-Minute Premium"
-        symbol:
-          type: string
-          example: "BTC"
-        timeframe:
-          type: string
-          example: "5min"
-        tradingview_chart_id:
-          type: string
-          example: "tv_chart_123"
-        subscription_plans:
-          type: array
-          items:
-            type: string
-            format: objectid
-        conditions:
-          type: array
-          items:
-            $ref: '#/components/schemas/AlertCondition'
-        status:
-          type: string
-          enum: [active, inactive]
-          default: active
-        created_at:
-          type: string
-          format: date-time
-
-    AlertCondition:
-      type: object
-      properties:
-        condition_id:
-          type: string
-          example: "btc_premium_5min"
-        name:
-          type: string
-          example: "BTC Premium 5-Minute Alerts"
-        rules:
-          type: object
-          description: Dynamic rule configuration
-        actions:
-          type: array
-          items:
-            type: object
-        priority:
-          type: string
-          enum: [low, medium, high]
-          default: medium
-        enabled:
-          type: boolean
-          default: true
-
-    SubscriptionRequest:
-      type: object
-      required:
-        - plan_id
-        - payment_proof
-      properties:
-        _id:
-          type: string
-          format: objectid
-        user_id:
-          type: string
-          format: objectid
-        plan_id:
-          type: string
-          format: objectid
-        payment_proof:
-          type: string
-          format: uri
-        preferences:
-          $ref: '#/components/schemas/UserPreferences'
-        status:
-          type: string
-          enum: [pending, approved, rejected]
-          default: pending
-        admin_notes:
-          type: string
-          nullable: true
-        created_at:
-          type: string
-          format: date-time
-        processed_at:
-          type: string
-          format: date-time
-          nullable: true
-
-    WebhookPayload:
-      type: object
-      required:
-        - symbol
-        - timeframe
-        - signal
-        - timestamp
-      properties:
-        symbol:
-          type: string
-          example: "BTC"
-        timeframe:
-          type: string
-          example: "5min"
-        price:
-          type: number
-          format: float
-          example: 45000.50
-        signal:
-          type: string
-          enum: [buy, sell, hold]
-        timestamp:
-          type: string
-          format: date-time
-        chart_id:
-          type: string
-          format: objectid
-          nullable: true
-        metadata:
-          type: object
-          additionalProperties: true
-
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          example: "Validation failed"
-        message:
-          type: string
-          example: "The provided data is invalid"
-        code:
-          type: string
-          example: "VALIDATION_ERROR"
-        details:
-          type: array
-          items:
-            type: object
-            properties:
-              field:
-                type: string
-              message:
-                type: string
-        timestamp:
-          type: string
-          format: date-time
-        request_id:
-          type: string
-          format: uuid
-
-    Success:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        message:
-          type: string
-          example: "Operation completed successfully"
-        data:
-          type: object
-        timestamp:
-          type: string
-          format: date-time
-        request_id:
-          type: string
-          format: uuid
-
-paths:
-  # User Management Endpoints
-  /users:
-    post:
-      tags:
-        - Users
-      summary: Register a new user
-      description: Create a new user account with Telegram ID
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - telegram_id
-                - first_name
-              properties:
-                telegram_id:
-                  type: string
-                  example: "123456789"
-                username:
-                  type: string
-                  example: "john_doe"
-                first_name:
-                  type: string
-                  example: "John"
-                last_name:
-                  type: string
-                  example: "Doe"
-      responses:
-        '201':
-          description: User created successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/User'
-        '400':
-          description: Invalid input data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '409':
-          description: User already exists
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /users/{id}:
-    get:
-      tags:
-        - Users
-      summary: Get user details
-      description: Retrieve user information by ID
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: objectid
-      responses:
-        '200':
-          description: User details retrieved successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/User'
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-    put:
-      tags:
-        - Users
-      summary: Update user details
-      description: Update user information
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: objectid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                first_name:
-                  type: string
-                last_name:
-                  type: string
-                status:
-                  type: string
-                  enum: [active, inactive, banned]
-      responses:
-        '200':
-          description: User updated successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/User'
-        '400':
-          description: Invalid input data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-    delete:
-      tags:
-        - Users
-      summary: Delete user
-      description: Delete user account (Admin only)
-      security:
-        - BearerAuth: [admin]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: objectid
-      responses:
-        '200':
-          description: User deleted successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Success'
-        '403':
-          description: Insufficient permissions
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /users/{id}/subscriptions:
-    get:
-      tags:
-        - Users
-      summary: Get user subscriptions
-      description: Retrieve all subscriptions for a user
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: objectid
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [pending, active, expired, cancelled]
-          description: Filter by subscription status
-      responses:
-        '200':
-          description: User subscriptions retrieved successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/UserSubscription'
-
-  # Subscription Plan Management
-  /subscriptions:
-    get:
-      tags:
-        - Subscription Plans
-      summary: List subscription plans
-      description: Get all available subscription plans
-      parameters:
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [active, inactive]
-          description: Filter by plan status
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 20
-        - name: offset
-          in: query
-          schema:
-            type: integer
-            minimum: 0
-            default: 0
-      responses:
-        '200':
-          description: Subscription plans retrieved successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        properties:
-                          plans:
-                            type: array
-                            items:
-                              $ref: '#/components/schemas/SubscriptionPlan'
-                          total:
-                            type: integer
-                          limit:
-                            type: integer
-                          offset:
-                            type: integer
-
-    post:
-      tags:
-        - Subscription Plans
-      summary: Create subscription plan
-      description: Create a new subscription plan (Admin only)
-      security:
-        - BearerAuth: [admin]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - name
-                - price
-                - duration_days
-              properties:
-                name:
-                  type: string
-                description:
-                  type: string
-                features:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/PlanFeature'
-                charts:
-                  type: array
-                  items:
-                    type: string
-                    format: objectid
-                symbols:
-                  type: array
-                  items:
-                    type: string
-                timeframes:
-                  type: array
-                  items:
-                    type: string
-                price:
-                  $ref: '#/components/schemas/Price'
-                duration_days:
-                  type: integer
-                max_alerts_per_hour:
-                  type: integer
-      responses:
-        '201':
-          description: Subscription plan created successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/SubscriptionPlan'
-
-  /subscriptions/{id}:
-    get:
-      tags:
-        - Subscription Plans
-      summary: Get subscription plan details
-      description: Retrieve detailed information about a subscription plan
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: objectid
-      responses:
-        '200':
-          description: Subscription plan details retrieved successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/SubscriptionPlan'
-
-    put:
-      tags:
-        - Subscription Plans
-      summary: Update subscription plan
-      description: Update subscription plan details (Admin only)
-      security:
-        - BearerAuth: [admin]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: objectid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                description:
-                  type: string
-                features:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/PlanFeature'
-                price:
-                  $ref: '#/components/schemas/Price'
-                status:
-                  type: string
-                  enum: [active, inactive]
-      responses:
-        '200':
-          description: Subscription plan updated successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/SubscriptionPlan'
-
-  # Subscription Requests
-  /subscription-requests:
-    get:
-      tags:
-        - Subscription Requests
-      summary: List subscription requests
-      description: Get all subscription requests (Admin only)
-      security:
-        - BearerAuth: [admin]
-      parameters:
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [pending, approved, rejected]
-        - name: user_id
-          in: query
-          schema:
-            type: string
-            format: objectid
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 20
-        - name: offset
-          in: query
-          schema:
-            type: integer
-            minimum: 0
-            default: 0
-      responses:
-        '200':
-          description: Subscription requests retrieved successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        properties:
-                          requests:
-                            type: array
-                            items:
-                              $ref: '#/components/schemas/SubscriptionRequest'
-                          total:
-                            type: integer
-
-    post:
-      tags:
-        - Subscription Requests
-      summary: Submit subscription request
-      description: Submit a new subscription request
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - plan_id
-                - payment_proof
-              properties:
-                plan_id:
-                  type: string
-                  format: objectid
-                payment_proof:
-                  type: string
-                  format: uri
-                preferences:
-                  $ref: '#/components/schemas/UserPreferences'
-      responses:
-        '201':
-          description: Subscription request submitted successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/SubscriptionRequest'
-
-  /subscription-requests/{id}/approve:
-    put:
-      tags:
-        - Subscription Requests
-      summary: Approve subscription request
-      description: Approve a pending subscription request (Admin only)
-      security:
-        - BearerAuth: [admin]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: objectid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                admin_notes:
-                  type: string
-                  description: Optional notes from admin
-      responses:
-        '200':
-          description: Subscription request approved successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/SubscriptionRequest'
-
-  /subscription-requests/{id}/reject:
-    put:
-      tags:
-        - Subscription Requests
-      summary: Reject subscription request
-      description: Reject a pending subscription request (Admin only)
-      security:
-        - BearerAuth: [admin]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: objectid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - reason
-              properties:
-                reason:
-                  type: string
-                  description: Reason for rejection
-                admin_notes:
-                  type: string
-      responses:
-        '200':
-          description: Subscription request rejected successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/SubscriptionRequest'
-
-  # Chart Management
-  /charts:
-    get:
-      tags:
-        - Charts
-      summary: List charts
-      description: Get all available charts
-      parameters:
-        - name: symbol
-          in: query
-          schema:
-            type: string
-        - name: timeframe
-          in: query
-          schema:
-            type: string
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [active, inactive]
-      responses:
-        '200':
-          description: Charts retrieved successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/Chart'
-
-    post:
-      tags:
-        - Charts
-      summary: Create chart
-      description: Create a new chart configuration (Admin only)
-      security:
-        - BearerAuth: [admin]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - name
-                - symbol
-                - timeframe
-              properties:
-                name:
-                  type: string
-                symbol:
-                  type: string
-                timeframe:
-                  type: string
-                tradingview_chart_id:
-                  type: string
-                subscription_plans:
-                  type: array
-                  items:
-                    type: string
-                    format: objectid
-                conditions:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/AlertCondition'
-      responses:
-        '201':
-          description: Chart created successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/Chart'
-
-  # Webhook Endpoints
-  /webhooks/tradingview:
-    post:
-      tags:
-        - Webhooks
-      summary: Receive TradingView webhook
-      description: Endpoint for receiving alerts from TradingView
-      security:
-        - ApiKeyAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WebhookPayload'
-      responses:
-        '200':
-          description: Webhook processed successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        properties:
-                          processed_alerts:
-                            type: integer
-                          matched_users:
-                            type: integer
-                          queued_messages:
-                            type: integer
-        '400':
-          description: Invalid webhook payload
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Invalid API key
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /webhooks/status:
-    get:
-      tags:
-        - Webhooks
-      summary: Webhook health check
-      description: Check webhook endpoint health
-      responses:
-        '200':
-          description: Webhook is healthy
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "healthy"
-                  timestamp:
-                    type: string
-                    format: date-time
-                  version:
-                    type: string
-                    example: "1.0.0"
-
-  # Admin Endpoints
-  /admin/dashboard:
-    get:
-      tags:
-        - Admin
-      summary: Get dashboard data
-      description: Retrieve admin dashboard statistics
-      security:
-        - BearerAuth: [admin]
-      responses:
-        '200':
-          description: Dashboard data retrieved successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        properties:
-                          total_users:
-                            type: integer
-                          active_subscriptions:
-                            type: integer
-                          pending_requests:
-                            type: integer
-                          alerts_sent_today:
-                            type: integer
-                          revenue_this_month:
-                            type: number
-                          top_symbols:
-                            type: array
-                            items:
-                              type: object
-                              properties:
-                                symbol:
-                                  type: string
-                                count:
-                                  type: integer
-
-  /admin/dropdown-options:
-    get:
-      tags:
-        - Admin
-      summary: Get dropdown options
-      description: Retrieve all dropdown options for admin interface
-      security:
-        - BearerAuth: [admin]
-      responses:
-        '200':
-          description: Dropdown options retrieved successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Success'
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        properties:
-                          symbols:
-                            type: array
-                            items:
-                              type: string
-                          timeframes:
-                            type: array
-                            items:
-                              type: string
-                          alert_types:
-                            type: array
-                            items:
-                              type: string
-                          subscription_statuses:
-                            type: array
-                            items:
-                              type: string
-                          user_statuses:
-                            type: array
-                            items:
-                              type: string
-```
-
-## Telegram Service API
-
-### OpenAPI Specification
-
-```yaml
-openapi: 3.0.3
-info:
-  title: Alert Bot Telegram Service API
-  description: Telegram bot operations and message delivery service
-  version: 1.0.0
-
-servers:
-  - url: https://api.alertbot.com/api/v1/telegram
-    description: Production server
-  - url: http://localhost:3002/api/v1
-    description: Development server
-
-security:
-  - BearerAuth: []
-  - ApiKeyAuth: []
-
-components:
-  schemas:
-    TelegramMessage:
-      type: object
-      required:
-        - telegram_id
-        - text
-      properties:
-        telegram_id:
-          type: string
-          example: "123456789"
-        text:
-          type: string
-          example: "🚀 BTC Alert: Buy signal detected at $45,000"
-        parse_mode:
-          type: string
-          enum: [HTML, Markdown, MarkdownV2]
-          default: HTML
-        reply_markup:
-          type: object
-          description: Telegram inline keyboard markup
-        disable_notification:
-          type: boolean
-          default: false
-
-    AlertMessage:
-      type: object
-      required:
-        - user_id
-        - symbol
-        - signal
-        - price
-      properties:
-        user_id:
-          type: string
-          format: objectid
-        telegram_id:
-          type: string
-        symbol:
-          type: string
-          example: "BTC"
-        timeframe:
-          type: string
-          example: "5min"
-        signal:
-          type: string
-          enum: [buy, sell, hold]
-        price:
-          type: number
-          format: float
-          example: 45000.50
-        timestamp:
-          type: string
-          format: date-time
-        priority:
-          type: string
-          enum: [low, medium, high]
-          default: medium
-        template:
-          type: string
-          example: "premium_alert"
-          description: Message template to use
-
-    BroadcastMessage:
-      type: object
-      required:
-        - message
-        - target_criteria
-      properties:
-        message:
-          type: string
-          example: "📢 System maintenance scheduled for tonight at 2 AM UTC"
-        target_criteria:
-          type: object
-          properties:
-            subscription_status:
-              type: array
-              items:
-                type: string
-                enum: [active, expired]
-            user_status:
-              type: array
-              items:
-                type: string
-                enum: [active, inactive]
-            subscription_plans:
-              type: array
-              items:
-                type: string
-                format: objectid
-        parse_mode:
-          type: string
-          enum: [HTML, Markdown, MarkdownV2]
-          default: HTML
-        schedule_time:
-          type: string
-          format: date-time
-          description: Optional scheduled delivery time
-
-    BotInfo:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 123456789
-        is_bot:
-          type: boolean
-          example: true
-        first_name:
-          type: string
-          example: "Alert Bot"
-        username:
-          type: string
-          example: "alertbot"
-        can_join_groups:
-          type: boolean
-        can_read_all_group_messages:
-          type: boolean
-        supports_inline_queries:
-          type: boolean
-
-    UserSession:
-      type: object
-      properties:
-        telegram_id:
-          type: string
-        user_id:
-          type: string
-          format: objectid
-        current_menu:
-          type: string
-          example: "main_menu"
-        temp_data:
-          type: object
-          description: Temporary session data
-        last_activity:
-          type: string
-          format: date-time
-        expires_at:
-          type: string
-          format: date-time
-
-paths:
-  /send-message:
-    post:
-      tags:
-        - Messages
-      summary: Send message to user
-      description: Send a custom message to a specific Telegram user
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TelegramMessage'
-      responses:
-        '200':
-          description: Message sent successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message_id:
-                    type: integer
-                    example: 123
-                  delivery_time:
-                    type: string
-                    format: date-time
-        '400':
-          description: Invalid message data
-        '404':
-          description: User not found
-        '429':
-          description: Rate limit exceeded
-
-  /send-alert:
-    post:
-      tags:
-        - Messages
-      summary: Send alert message
-      description: Send a formatted alert message to user
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AlertMessage'
-      responses:
-        '200':
-          description: Alert sent successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  message_id:
-                    type: integer
-                  formatted_message:
-                    type: string
-                  delivery_time:
-                    type: string
-                    format: date-time
-
-  /broadcast:
-    post:
-      tags:
-        - Messages
-      summary: Broadcast message
-      description: Send message to multiple users based on criteria (Admin only)
-      security:
-        - BearerAuth: [admin]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BroadcastMessage'
-      responses:
-        '200':
-          description: Broadcast initiated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  broadcast_id:
-                    type: string
-                  target_count:
-                    type: integer
-                  estimated_delivery_time:
-                    type: string
-
-  /bot-info:
-    get:
-      tags:
-        - Bot Management
-      summary: Get bot information
-      description: Retrieve Telegram bot information
-      responses:
-        '200':
-          description: Bot information retrieved successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - type: object
-                    properties:
-                      success:
-                        type: boolean
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/BotInfo'
-
-  /webhook-info:
-    get:
-      tags:
-        - Bot Management
-      summary: Get webhook information
-      description: Get current webhook configuration
-      responses:
-        '200':
-          description: Webhook information retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  data:
-                    type: object
-                    properties:
-                      url:
-                        type: string
-                        format: uri
-                      has_custom_certificate:
-                        type: boolean
-                      pending_update_count:
-                        type: integer
-                      last_error_date:
-                        type: integer
-                      last_error_message:
-                        type: string
-                      max_connections:
-                        type: integer
-                      allowed_updates:
-                        type: array
-                        items:
-                          type: string
-
-  /set-webhook:
-    post:
-      tags:
-        - Bot Management
-      summary: Set webhook URL
-      description: Configure Telegram webhook URL (Admin only)
-      security:
-        - BearerAuth: [admin]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - url
-              properties:
-                url:
-                  type: string
-                  format: uri
-                  example: "https://api.alertbot.com/api/v1/telegram/webhook"
-                max_connections:
-                  type: integer
-                  minimum: 1
-                  maximum: 100
-                  default: 40
-                allowed_updates:
-                  type: array
-                  items:
-                    type: string
-                  example: ["message", "callback_query"]
-      responses:
-        '200':
-          description: Webhook set successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  message:
-                    type: string
-
-  /webhook:
-    post:
-      tags:
-        - Bot Management
-      summary: Telegram webhook endpoint
-      description: Endpoint for receiving updates from Telegram
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              description: Telegram Update object
-      responses:
-        '200':
-          description: Update processed successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  ok:
-                    type: boolean
-                    example: true
-
-  /user/{id}/session:
-    get:
-      tags:
-        - User Sessions
-      summary: Get user session
-      description: Retrieve current session data for a user
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Telegram user ID
-      responses:
-        '200':
-          description: Session data retrieved successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - type: object
-                    properties:
-                      success:
-                        type: boolean
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/UserSession'
-        '404':
-          description: Session not found
-```
-
-## Error Handling
-
-### Standard Error Response Format
-
+### 1.3 Error Response Format
 ```json
 {
-  "error": "VALIDATION_ERROR",
-  "message": "The provided data is invalid",
-  "code": "VALIDATION_ERROR",
-  "details": [
-    {
-      "field": "telegram_id",
-      "message": "Telegram ID is required"
-    },
-    {
-      "field": "first_name",
-      "message": "First name must be at least 1 character long"
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid input parameters",
+    "details": {
+      "field": "email",
+      "reason": "Invalid email format"
     }
-  ],
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "request_id": "req_123e4567-e89b-12d3-a456-426614174000"
+  },
+  "timestamp": "2024-01-15T10:30:00Z",
+  "requestId": "req_123456789"
 }
 ```
 
-### Error Codes
+### 1.4 HTTP Status Codes
+- `200` - Success
+- `201` - Created
+- `400` - Bad Request
+- `401` - Unauthorized
+- `403` - Forbidden
+- `404` - Not Found
+- `409` - Conflict
+- `422` - Unprocessable Entity
+- `429` - Too Many Requests
+- `500` - Internal Server Error
 
-```javascript
-const errorCodes = {
-  // Authentication & Authorization
-  'UNAUTHORIZED': 401,
-  'FORBIDDEN': 403,
-  'INVALID_TOKEN': 401,
-  'TOKEN_EXPIRED': 401,
-  'INVALID_API_KEY': 401,
-  
-  // Validation
-  'VALIDATION_ERROR': 400,
-  'INVALID_INPUT': 400,
-  'MISSING_REQUIRED_FIELD': 400,
-  'INVALID_FORMAT': 400,
-  
-  // Resource Management
-  'RESOURCE_NOT_FOUND': 404,
-  'RESOURCE_ALREADY_EXISTS': 409,
-  'RESOURCE_CONFLICT': 409,
-  
-  // Business Logic
-  'SUBSCRIPTION_EXPIRED': 402,
-  'SUBSCRIPTION_NOT_FOUND': 404,
-  'PAYMENT_REQUIRED': 402,
-  'INSUFFICIENT_PERMISSIONS': 403,
-  
-  // Rate Limiting
-  'RATE_LIMIT_EXCEEDED': 429,
-  'QUOTA_EXCEEDED': 429,
-  
-  // External Services
-  'TELEGRAM_API_ERROR': 502,
-  'DATABASE_ERROR': 500,
-  'EXTERNAL_SERVICE_ERROR': 502,
-  
-  // System
-  'INTERNAL_SERVER_ERROR': 500,
-  'SERVICE_UNAVAILABLE': 503,
-  'MAINTENANCE_MODE': 503
-};
+## 2. Authentication
+
+### 2.1 JWT Authentication
+Used for admin panel and user management.
+
+**Login Endpoint:**
+```http
+POST /auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "securePassword"
+}
 ```
 
-## Rate Limiting
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "refresh_token_here",
+    "expiresIn": 3600,
+    "user": {
+      "id": "admin_123",
+      "email": "admin@example.com",
+      "role": "admin",
+      "permissions": ["users.view", "subscriptions.approve"]
+    }
+  }
+}
+```
 
-### Rate Limit Headers
+**Usage:**
+```http
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### 2.2 API Key Authentication
+Used for webhook endpoints and external integrations.
+
+**Usage:**
+```http
+X-API-Key: your_api_key_here
+```
+
+### 2.3 Webhook Signature Verification
+For TradingView webhooks:
 
 ```http
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1640995200
-X-RateLimit-Window: 900
+X-TradingView-Signature: sha256=calculated_signature
 ```
 
-### Rate Limit Configuration
+## 3. Core API Endpoints
 
-```javascript
-const rateLimitConfig = {
-  // General API endpoints
-  default: {
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // requests per window
-    message: {
-      error: 'RATE_LIMIT_EXCEEDED',
-      message: 'Too many requests, please try again later'
-    }
-  },
-  
-  // Authentication endpoints
-  auth: {
-    windowMs: 15 * 60 * 1000,
-    max: 5,
-    message: {
-      error: 'RATE_LIMIT_EXCEEDED',
-      message: 'Too many authentication attempts'
-    }
-  },
-  
-  // Webhook endpoints
-  webhook: {
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 1000,
-    skipSuccessfulRequests: true
-  },
-  
-  // User-specific limits
-  user: {
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 50, // alerts per user per hour
-    keyGenerator: (req) => req.user?.user_id || req.ip
-  }
-};
+### 3.1 User Management
+
+#### Get User Profile
+```http
+GET /users/{userId}
+Authorization: Bearer {token}
 ```
 
-## API Testing
-
-### Postman Collection Structure
-
+**Response:**
 ```json
 {
-  "info": {
-    "name": "Alert Bot API",
-    "description": "Complete API collection for Alert Bot services",
-    "version": "1.0.0"
-  },
-  "auth": {
-    "type": "bearer",
-    "bearer": [
-      {
-        "key": "token",
-        "value": "{{jwt_token}}",
-        "type": "string"
+  "success": true,
+  "data": {
+    "id": "user_123",
+    "email": "user@example.com",
+    "telegram": {
+      "userId": "telegram_123",
+      "username": "john_trader",
+      "firstName": "John",
+      "lastName": "Doe",
+      "chatId": "chat_123"
+    },
+    "profile": {
+      "name": "John Doe",
+      "phone": "+1234567890",
+      "timezone": "UTC"
+    },
+    "status": "active",
+    "preferences": {
+      "notifications": {
+        "email": true,
+        "telegram": true,
+        "renewalReminders": true
+      },
+      "trading": {
+        "riskLevel": "medium",
+        "maxDailyAlerts": 50
       }
-    ]
-  },
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost:3000/api/v1"
     },
-    {
-      "key": "jwt_token",
-      "value": ""
-    },
-    {
-      "key": "api_key",
-      "value": ""
-    }
-  ],
-  "item": [
-    {
-      "name": "Authentication",
-      "item": [
-        {
-          "name": "Login",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"telegram_id\": \"123456789\",\n  \"first_name\": \"John\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/auth/login",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "login"]
-            }
-          }
-        }
-      ]
-    }
-  ]
+    "createdAt": "2024-01-01T00:00:00Z",
+    "lastLoginAt": "2024-01-15T10:30:00Z"
+  }
 }
 ```
 
-### Test Scenarios
+#### Update User Profile
+```http
+PUT /users/{userId}
+Authorization: Bearer {token}
+Content-Type: application/json
 
-```javascript
-// Example test scenarios for API endpoints
-const testScenarios = {
-  userRegistration: {
-    validData: {
-      telegram_id: "123456789",
-      username: "john_doe",
-      first_name: "John",
-      last_name: "Doe"
-    },
-    invalidData: [
-      {
-        description: "Missing telegram_id",
-        data: { first_name: "John" },
-        expectedError: "VALIDATION_ERROR"
-      },
-      {
-        description: "Invalid telegram_id format",
-        data: { telegram_id: "invalid", first_name: "John" },
-        expectedError: "VALIDATION_ERROR"
-      }
-    ]
+{
+  "profile": {
+    "name": "John Smith",
+    "phone": "+1234567890",
+    "timezone": "America/New_York"
   },
-  
-  subscriptionRequest: {
-    validData: {
-      plan_id: "507f1f77bcf86cd799439011",
-      payment_proof: "https://example.com/payment.jpg",
-      preferences: {
-        symbols: ["BTC", "ETH"],
-        timeframes: ["5min", "1h"],
-        alert_types: ["buy_signal", "sell_signal"]
-      }
+  "preferences": {
+    "notifications": {
+      "email": false,
+      "telegram": true,
+      "renewalReminders": true
     },
-    invalidData: [
+    "trading": {
+      "riskLevel": "high",
+      "maxDailyAlerts": 100
+    }
+  }
+}
+```
+
+#### List Users (Admin)
+```http
+GET /admin/users?page=1&limit=20&status=active&search=john
+Authorization: Bearer {admin_token}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "users": [
       {
-        description: "Invalid plan_id format",
-        data: { plan_id: "invalid", payment_proof: "https://example.com/payment.jpg" },
-        expectedError: "VALIDATION_ERROR"
+        "id": "user_123",
+        "email": "user@example.com",
+        "profile": {
+          "name": "John Doe"
+        },
+        "status": "active",
+        "activeSubscriptions": 2,
+        "createdAt": "2024-01-01T00:00:00Z",
+        "lastLoginAt": "2024-01-15T10:30:00Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 150,
+      "pages": 8
+    }
+  }
+}
+```
+
+### 3.2 Subscription Management
+
+#### Get Subscription Plans
+```http
+GET /subscription-plans?status=active
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "plans": [
+      {
+        "id": "plan_123",
+        "name": "Premium Trading Alerts",
+        "description": "Advanced trading alerts with premium features",
+        "pricing": {
+          "amount": 2999,
+          "currency": "INR",
+          "duration": {
+            "months": 3,
+            "days": 0
+          }
+        },
+        "features": {
+          "maxAlertConfigs": -1,
+          "maxOpenTrades": 3,
+          "prioritySupport": true,
+          "advancedAnalytics": true
+        },
+        "alertConfigurations": [
+          {
+            "id": "config_123",
+            "name": "BTC Premium Signals",
+            "symbol": "BTC",
+            "timeframe": "5m",
+            "strategy": "Premium Strategy V2"
+          }
+        ],
+        "status": "active",
+        "metadata": {
+          "displayOrder": 1,
+          "isPopular": true,
+          "tags": ["premium", "crypto"]
+        }
       }
     ]
   }
-};
+}
 ```
 
-This comprehensive API documentation provides a complete reference for all endpoints, request/response formats, authentication methods, error handling, and testing guidelines for the Alert Bot microservices architecture.
+#### Create Subscription Request
+```http
+POST /subscriptions
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "subscriptionPlanId": "plan_123",
+  "payment": {
+    "transactionId": "txn_123456789",
+    "amount": 2999,
+    "currency": "INR",
+    "method": "UPI",
+    "proofUrl": "https://example.com/payment-proof.jpg"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "subscriptionId": "sub_123",
+    "status": "pending",
+    "message": "Subscription request created successfully. Awaiting admin approval."
+  }
+}
+```
+
+#### Get User Subscriptions
+```http
+GET /users/{userId}/subscriptions?status=active
+Authorization: Bearer {token}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "subscriptions": [
+      {
+        "id": "sub_123",
+        "subscriptionPlan": {
+          "id": "plan_123",
+          "name": "Premium Trading Alerts",
+          "pricing": {
+            "amount": 2999,
+            "currency": "INR",
+            "duration": {
+              "months": 3
+            }
+          }
+        },
+        "payment": {
+          "transactionId": "txn_123456789",
+          "amount": 2999,
+          "status": "approved",
+          "approvedAt": "2024-01-02T10:00:00Z"
+        },
+        "subscription": {
+          "startDate": "2024-01-02T10:00:00Z",
+          "endDate": "2024-04-02T10:00:00Z",
+          "status": "active",
+          "autoRenew": false
+        },
+        "usage": {
+          "alertsReceived": 245,
+          "tradesOpened": 12,
+          "lastActivityAt": "2024-01-15T09:30:00Z"
+        }
+      }
+    ]
+  }
+}
+```
+
+#### Approve Subscription (Admin)
+```http
+PUT /admin/subscriptions/{subscriptionId}/approve
+Authorization: Bearer {admin_token}
+Content-Type: application/json
+
+{
+  "approved": true,
+  "startDate": "2024-01-15T00:00:00Z",
+  "notes": "Payment verified and approved"
+}
+```
+
+### 3.3 Alert Configuration Management
+
+#### Get Alert Configurations
+```http
+GET /alert-configurations?symbol=BTC&timeframe=5m&status=active
+Authorization: Bearer {admin_token}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "configurations": [
+      {
+        "id": "config_123",
+        "name": "BTC 5-Minute Premium Signals",
+        "description": "High-frequency BTC trading signals",
+        "symbol": "BTC",
+        "timeframe": "5m",
+        "strategy": "Premium Strategy V2",
+        "tradeManagement": {
+          "maxOpenTrades": 3,
+          "allowOppositeSignals": true,
+          "replaceOnSameSignal": true,
+          "autoCloseOnTPSL": true
+        },
+        "alertTypes": {
+          "entry": {
+            "enabled": true,
+            "signals": ["BUY", "SELL"]
+          },
+          "exit": {
+            "enabled": true,
+            "signals": ["TP_HIT", "SL_HIT"]
+          }
+        },
+        "validation": {
+          "requiredFields": ["symbol", "timeframe", "strategy", "signal", "price", "tp", "sl"],
+          "priceValidation": {
+            "enabled": true,
+            "tolerance": 0.05
+          }
+        },
+        "status": "active",
+        "statistics": {
+          "totalAlerts": 1250,
+          "totalTrades": 89,
+          "successRate": 0.73,
+          "lastAlertAt": "2024-01-15T10:25:00Z"
+        }
+      }
+    ]
+  }
+}
+```
+
+#### Create Alert Configuration (Admin)
+```http
+POST /admin/alert-configurations
+Authorization: Bearer {admin_token}
+Content-Type: application/json
+
+{
+  "name": "ETH 15-Minute Signals",
+  "description": "Ethereum 15-minute timeframe trading signals",
+  "symbol": "ETH",
+  "timeframe": "15m",
+  "strategy": "ETH Momentum Strategy",
+  "tradeManagement": {
+    "maxOpenTrades": 2,
+    "allowOppositeSignals": true,
+    "replaceOnSameSignal": true,
+    "autoCloseOnTPSL": true
+  },
+  "alertTypes": {
+    "entry": {
+      "enabled": true,
+      "signals": ["BUY", "SELL"]
+    },
+    "exit": {
+      "enabled": true,
+      "signals": ["TP_HIT", "SL_HIT"]
+    }
+  },
+  "validation": {
+    "requiredFields": ["symbol", "timeframe", "strategy", "signal", "price", "tp", "sl"],
+    "priceValidation": {
+      "enabled": true,
+      "tolerance": 0.03
+    }
+  }
+}
+```
+
+### 3.4 Trade Management
+
+#### Get User Trades
+```http
+GET /users/{userId}/trades?status=open&alertConfigId=config_123&page=1&limit=20
+Authorization: Bearer {token}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "trades": [
+      {
+        "id": "trade_123",
+        "tradeNumber": 15,
+        "alertConfiguration": {
+          "id": "config_123",
+          "name": "BTC 5-Minute Premium Signals",
+          "symbol": "BTC",
+          "timeframe": "5m",
+          "strategy": "Premium Strategy V2"
+        },
+        "tradeData": {
+          "symbol": "BTC",
+          "timeframe": "5m",
+          "strategy": "Premium Strategy V2",
+          "signal": "BUY",
+          "entryPrice": 45000.50,
+          "takeProfitPrice": 46000.00,
+          "stopLossPrice": 44500.00,
+          "exitPrice": null,
+          "exitReason": null
+        },
+        "status": "open",
+        "pnl": {
+          "amount": null,
+          "percentage": null,
+          "currency": "USD"
+        },
+        "timestamps": {
+          "openedAt": "2024-01-15T10:30:00Z",
+          "closedAt": null,
+          "replacedAt": null
+        },
+        "alerts": {
+          "entryAlertId": "alert_123",
+          "exitAlertId": null
+        },
+        "metadata": {
+          "replacedBy": null,
+          "replacementReason": null,
+          "notes": null
+        }
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 5,
+      "pages": 1
+    },
+    "summary": {
+      "openTrades": 3,
+      "closedTrades": 12,
+      "totalPnL": 1250.75,
+      "winRate": 0.67
+    }
+  }
+}
+```
+
+#### Get Trade Details
+```http
+GET /trades/{tradeId}
+Authorization: Bearer {token}
+```
+
+#### Close Trade Manually (Admin)
+```http
+PUT /admin/trades/{tradeId}/close
+Authorization: Bearer {admin_token}
+Content-Type: application/json
+
+{
+  "exitPrice": 45750.00,
+  "exitReason": "MANUAL",
+  "notes": "Manual close due to market conditions"
+}
+```
+
+### 3.5 Alert Processing
+
+#### Get Alert History
+```http
+GET /alerts?symbol=BTC&timeframe=5m&signal=BUY&page=1&limit=50
+Authorization: Bearer {admin_token}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "alerts": [
+      {
+        "id": "alert_123",
+        "source": "tradingview",
+        "webhook": {
+          "receivedAt": "2024-01-15T10:30:00Z",
+          "processedAt": "2024-01-15T10:30:02Z",
+          "ipAddress": "52.89.214.238"
+        },
+        "alertData": {
+          "symbol": "BTC",
+          "timeframe": "5m",
+          "strategy": "Premium Strategy V2",
+          "signal": "BUY",
+          "price": 45000.50,
+          "takeProfitPrice": 46000.00,
+          "stopLossPrice": 44500.00,
+          "timestamp": "2024-01-15T10:30:00Z"
+        },
+        "processing": {
+          "status": "processed",
+          "alertConfigId": "config_123",
+          "matchedUsers": [
+            {
+              "userId": "user_123",
+              "subscriptionId": "sub_123",
+              "delivered": true,
+              "deliveredAt": "2024-01-15T10:30:03Z"
+            }
+          ],
+          "tradeActions": [
+            {
+              "action": "OPEN_TRADE",
+              "tradeId": "trade_123",
+              "userId": "user_123"
+            }
+          ]
+        },
+        "statistics": {
+          "processingTime": 2000,
+          "deliveryCount": 1,
+          "failureCount": 0
+        }
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 50,
+      "total": 1250,
+      "pages": 25
+    }
+  }
+}
+```
+
+### 3.6 User Alert Preferences
+
+#### Get User Alert Preferences
+```http
+GET /users/{userId}/alert-preferences
+Authorization: Bearer {token}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "preferences": [
+      {
+        "id": "pref_123",
+        "alertConfiguration": {
+          "id": "config_123",
+          "name": "BTC 5-Minute Premium Signals",
+          "symbol": "BTC",
+          "timeframe": "5m",
+          "strategy": "Premium Strategy V2"
+        },
+        "subscription": {
+          "id": "sub_123",
+          "planName": "Premium Trading Alerts",
+          "status": "active"
+        },
+        "preferences": {
+          "enabled": true,
+          "alertTypes": {
+            "entry": true,
+            "exit": true,
+            "replacement": true
+          },
+          "notifications": {
+            "telegram": true,
+            "email": false
+          },
+          "customSettings": {
+            "minPrice": 40000,
+            "maxPrice": 50000,
+            "riskLevel": "medium"
+          }
+        },
+        "statistics": {
+          "alertsReceived": 89,
+          "tradesOpened": 6,
+          "lastAlertAt": "2024-01-15T10:30:00Z"
+        }
+      }
+    ]
+  }
+}
+```
+
+#### Update Alert Preferences
+```http
+PUT /users/{userId}/alert-preferences/{preferenceId}
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "preferences": {
+    "enabled": true,
+    "alertTypes": {
+      "entry": true,
+      "exit": false,
+      "replacement": true
+    },
+    "notifications": {
+      "telegram": true,
+      "email": true
+    },
+    "customSettings": {
+      "minPrice": 42000,
+      "maxPrice": 48000,
+      "riskLevel": "high"
+    }
+  }
+}
+```
+
+## 4. Webhook Endpoints
+
+### 4.1 TradingView Webhook
+Receives alerts from TradingView and processes them for distribution.
+
+```http
+POST /webhooks/tradingview
+Content-Type: application/json
+X-TradingView-Signature: sha256=calculated_signature
+
+{
+  "symbol": "BTC",
+  "timeframe": "5m",
+  "strategy": "Premium Strategy V2",
+  "signal": "BUY",
+  "price": 45000.50,
+  "tp": 46000.00,
+  "sl": 44500.00,
+  "timestamp": "2024-01-15T10:30:00Z",
+  "confidence": 0.85,
+  "volume": 1250000,
+  "indicators": {
+    "rsi": 35.2,
+    "macd": 0.15,
+    "ema_20": 44950.00,
+    "ema_50": 44800.00
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "alertId": "alert_123",
+    "status": "received",
+    "message": "Alert received and queued for processing"
+  }
+}
+```
+
+### 4.2 TP/SL Hit Webhook
+Receives notifications when Take Profit or Stop Loss is hit.
+
+```http
+POST /webhooks/tradingview
+Content-Type: application/json
+X-TradingView-Signature: sha256=calculated_signature
+
+{
+  "symbol": "BTC",
+  "timeframe": "5m",
+  "strategy": "Premium Strategy V2",
+  "signal": "TP_HIT",
+  "price": 46000.00,
+  "tradeNumber": 15,
+  "timestamp": "2024-01-15T11:45:00Z",
+  "originalEntry": {
+    "signal": "BUY",
+    "price": 45000.50,
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+## 5. Telegram Bot Integration
+
+### 5.1 Bot Commands
+The Telegram bot uses menu-driven UI instead of commands, but supports these internal commands:
+
+#### User Registration
+```
+/start - Initialize bot and register user
+/help - Show help information
+/menu - Show main menu
+```
+
+### 5.2 Menu Structure
+```
+Main Menu:
+├── 📊 My Subscriptions
+│   ├── View Active Subscriptions
+│   ├── Subscription History
+│   └── Renew Subscription
+├── ⚙️ Alert Preferences
+│   ├── Configure Alerts
+│   ├── Notification Settings
+│   └── Trading Preferences
+├── 📈 My Trades
+│   ├── Open Trades
+│   ├── Trade History
+│   └── Performance Stats
+├── 💳 Purchase Subscription
+│   ├── View Plans
+│   ├── Make Payment
+│   └── Upload Proof
+├── 👤 Profile Settings
+│   ├── Update Profile
+│   ├── Change Preferences
+│   └── Account Status
+└── 📞 Support
+    ├── Contact Admin
+    ├── FAQ
+    └── Report Issue
+```
+
+### 5.3 Alert Message Format
+
+#### Entry Signal
+```
+🚀 Trade #15 - BUY Signal
+
+📊 Symbol: BTC
+⏰ Timeframe: 5m
+🎯 Strategy: Premium Strategy V2
+
+💰 Entry Price: $45,000.50
+🎯 Take Profit: $46,000.00
+🛡️ Stop Loss: $44,500.00
+
+📈 Confidence: 85%
+⏱️ Time: 15 Jan 2024, 10:30 UTC
+
+📱 Manage this trade in your dashboard
+```
+
+#### Exit Signal
+```
+✅ Trade #15 - Take Profit Hit!
+
+📊 Symbol: BTC
+💰 Entry: $45,000.50
+🎯 Exit: $46,000.00
+
+💵 Profit: $999.50 (+2.22%)
+⏱️ Duration: 1h 15m
+
+🎉 Congratulations on your successful trade!
+```
+
+#### Trade Replacement
+```
+🔄 Trade #15 Replaced
+
+📊 Symbol: BTC
+⚠️ Previous BUY trade closed
+🆕 New BUY signal received
+
+💰 New Entry: $45,200.00
+🎯 Take Profit: $46,200.00
+🛡️ Stop Loss: $44,700.00
+
+📱 Check your dashboard for details
+```
+
+## 6. Admin Panel API
+
+### 6.1 Dashboard Statistics
+```http
+GET /admin/dashboard/stats
+Authorization: Bearer {admin_token}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "overview": {
+      "totalUsers": 1250,
+      "activeSubscriptions": 890,
+      "pendingApprovals": 15,
+      "totalRevenue": 2650000,
+      "alertsSentToday": 1450
+    },
+    "userStats": {
+      "newUsersToday": 25,
+      "newUsersThisWeek": 180,
+      "newUsersThisMonth": 720,
+      "activeUsersToday": 650
+    },
+    "subscriptionStats": {
+      "pendingPayments": 15,
+      "expiringThisWeek": 45,
+      "renewalRate": 0.73,
+      "averageSubscriptionValue": 2980
+    },
+    "alertStats": {
+      "alertsSentToday": 1450,
+      "alertsSentThisWeek": 9800,
+      "averageProcessingTime": 1.2,
+      "successRate": 0.998
+    },
+    "tradeStats": {
+      "openTrades": 2340,
+      "tradesClosedToday": 180,
+      "averageWinRate": 0.68,
+      "totalPnL": 125000
+    }
+  }
+}
+```
+
+### 6.2 Subscription Approval Queue
+```http
+GET /admin/subscriptions/pending?page=1&limit=20
+Authorization: Bearer {admin_token}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "subscriptions": [
+      {
+        "id": "sub_123",
+        "user": {
+          "id": "user_123",
+          "email": "user@example.com",
+          "profile": {
+            "name": "John Doe"
+          },
+          "telegram": {
+            "username": "john_trader"
+          }
+        },
+        "subscriptionPlan": {
+          "id": "plan_123",
+          "name": "Premium Trading Alerts",
+          "pricing": {
+            "amount": 2999,
+            "currency": "INR"
+          }
+        },
+        "payment": {
+          "transactionId": "txn_123456789",
+          "amount": 2999,
+          "method": "UPI",
+          "proofUrl": "https://example.com/payment-proof.jpg",
+          "status": "pending"
+        },
+        "createdAt": "2024-01-15T09:30:00Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 15,
+      "pages": 1
+    }
+  }
+}
+```
+
+### 6.3 System Configuration
+```http
+GET /admin/config
+Authorization: Bearer {admin_token}
+```
+
+```http
+PUT /admin/config
+Authorization: Bearer {admin_token}
+Content-Type: application/json
+
+{
+  "telegram": {
+    "botToken": "encrypted_token",
+    "webhookUrl": "https://api.tradingalerts.com/webhooks/telegram",
+    "maxRetries": 3
+  },
+  "alerts": {
+    "maxPerHour": 10000,
+    "processingTimeout": 30000,
+    "retryDelay": 5000
+  },
+  "trading": {
+    "maxOpenTradesPerUser": 10,
+    "defaultRiskLevel": "medium",
+    "priceTolerancePercent": 5
+  },
+  "notifications": {
+    "renewalReminderDays": [7, 3, 1],
+    "emailEnabled": true,
+    "telegramEnabled": true
+  }
+}
+```
+
+## 7. Rate Limiting
+
+### 7.1 Rate Limit Headers
+All responses include rate limiting information:
+
+```http
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1642248000
+X-RateLimit-Window: 3600
+```
+
+### 7.2 Rate Limits by Endpoint
+
+| Endpoint Category | Limit | Window |
+|------------------|-------|--------|
+| Authentication | 5 requests | 15 minutes |
+| User Management | 100 requests | 1 hour |
+| Subscription Management | 50 requests | 1 hour |
+| Alert Processing | 1000 requests | 1 hour |
+| Webhook Endpoints | 10000 requests | 1 hour |
+| Admin Panel | 500 requests | 1 hour |
+
+### 7.3 Rate Limit Exceeded Response
+```json
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many requests. Please try again later.",
+    "details": {
+      "limit": 100,
+      "window": 3600,
+      "resetTime": "2024-01-15T11:30:00Z"
+    }
+  },
+  "timestamp": "2024-01-15T10:30:00Z",
+  "requestId": "req_123456789"
+}
+```
+
+## 8. Error Codes
+
+### 8.1 Authentication Errors
+- `AUTH_TOKEN_MISSING` - Authorization token not provided
+- `AUTH_TOKEN_INVALID` - Invalid or expired token
+- `AUTH_TOKEN_EXPIRED` - Token has expired
+- `AUTH_INSUFFICIENT_PERMISSIONS` - User lacks required permissions
+
+### 8.2 Validation Errors
+- `VALIDATION_ERROR` - General validation error
+- `REQUIRED_FIELD_MISSING` - Required field not provided
+- `INVALID_FORMAT` - Field format is invalid
+- `VALUE_OUT_OF_RANGE` - Value exceeds allowed range
+
+### 8.3 Business Logic Errors
+- `USER_NOT_FOUND` - User does not exist
+- `SUBSCRIPTION_NOT_FOUND` - Subscription does not exist
+- `SUBSCRIPTION_EXPIRED` - Subscription has expired
+- `SUBSCRIPTION_LIMIT_EXCEEDED` - User has reached subscription limit
+- `TRADE_NOT_FOUND` - Trade does not exist
+- `TRADE_ALREADY_CLOSED` - Trade is already closed
+- `ALERT_CONFIG_NOT_FOUND` - Alert configuration does not exist
+- `DUPLICATE_TRANSACTION_ID` - Transaction ID already exists
+
+### 8.4 System Errors
+- `INTERNAL_SERVER_ERROR` - Unexpected server error
+- `DATABASE_ERROR` - Database operation failed
+- `EXTERNAL_SERVICE_ERROR` - External service unavailable
+- `WEBHOOK_SIGNATURE_INVALID` - Webhook signature verification failed
+
+## 9. Pagination
+
+All list endpoints support pagination with consistent parameters:
+
+### 9.1 Query Parameters
+- `page` - Page number (default: 1)
+- `limit` - Items per page (default: 20, max: 100)
+- `sort` - Sort field (default: createdAt)
+- `order` - Sort order: asc/desc (default: desc)
+
+### 9.2 Response Format
+```json
+{
+  "success": true,
+  "data": {
+    "items": [],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 150,
+      "pages": 8,
+      "hasNext": true,
+      "hasPrev": false
+    }
+  }
+}
+```
+
+## 10. Filtering and Search
+
+### 10.1 Common Filter Parameters
+- `status` - Filter by status
+- `search` - Text search in relevant fields
+- `dateFrom` - Start date filter (ISO 8601)
+- `dateTo` - End date filter (ISO 8601)
+- `userId` - Filter by user ID
+- `subscriptionId` - Filter by subscription ID
+
+### 10.2 Example Usage
+```http
+GET /admin/users?status=active&search=john&dateFrom=2024-01-01&dateTo=2024-01-31&page=1&limit=20
+```
+
+## 11. Webhooks Security
+
+### 11.1 Signature Verification
+All webhook payloads are signed using HMAC-SHA256:
+
+```javascript
+// Verification example
+const crypto = require('crypto');
+
+function verifyWebhookSignature(payload, signature, secret) {
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+  
+  return `sha256=${expectedSignature}` === signature;
+}
+```
+
+### 11.2 IP Whitelisting
+Webhook endpoints accept requests only from whitelisted IP addresses:
+- TradingView IPs: `52.89.214.238`, `34.212.75.30`, `54.218.53.128`
+- Custom webhook IPs (configurable)
+
+## 12. API Versioning
+
+### 12.1 Version Strategy
+- URL versioning: `/v1/`, `/v2/`
+- Current version: `v1`
+- Backward compatibility maintained for 12 months
+- Deprecation notices provided 6 months in advance
+
+### 12.2 Version Headers
+```http
+API-Version: v1
+API-Deprecated: false
+API-Sunset: 2025-01-15T00:00:00Z
+```
+
+This comprehensive API documentation provides all the necessary information for integrating with the TradingView Alert Distribution System, covering authentication, core functionality, webhooks, admin operations, and security considerations.
