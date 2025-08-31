@@ -30,14 +30,16 @@ const createPaymentRequest = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Validation failed',
-        errors: errors.array()
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Validation failed'
+        }
       });
     }
 
     const { subscriptionPlanId } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.userId;
     
     // Get client metadata
     const metadata = {
@@ -54,8 +56,11 @@ const createPaymentRequest = async (req, res) => {
 
     if (existingPayment && !existingPayment.isExpired()) {
       return res.status(409).json({
-        status: 'error',
-        message: 'You already have a pending payment for this subscription plan',
+        success: false,
+        error: {
+          code: 'PAYMENT_EXISTS',
+          message: 'You already have a pending payment for this subscription plan'
+        },
         data: {
           paymentId: existingPayment._id,
           transactionId: existingPayment.transactionId,
@@ -97,8 +102,11 @@ const createPaymentRequest = async (req, res) => {
   } catch (error) {
     logger.error('Error creating payment request:', error);
     res.status(500).json({
-      status: 'error',
-      message: 'Failed to create payment request'
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to create payment request'
+      }
     });
   }
 };
@@ -111,86 +119,146 @@ const uploadPaymentProof = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Validation failed',
-        errors: errors.array()
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Validation failed'
+        }
       });
     }
 
     const { paymentId } = req.params;
-    const userId = req.user.id;
+    const { transactionId, notes } = req.body;
+    const userId = req.user.userId;
     const file = req.file;
 
     if (!file) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Payment proof file is required'
+        success: false,
+        error: {
+          code: 'MISSING_FILE',
+          message: 'Payment proof file is required'
+        }
       });
     }
 
     // Upload payment proof
-    const payment = await paymentService.uploadPaymentProof(paymentId, file, userId);
+    const payment = await paymentService.uploadPaymentProof(paymentId, file, userId, transactionId, notes);
     
-    // Populate subscription plan details
-    await payment.populate('subscriptionPlanId', 'name pricing');
-
     logger.info(`Payment proof uploaded for transaction: ${payment.transactionId}`);
 
     res.status(200).json({
-      status: 'success',
+      success: true,
+      message: 'Payment proof uploaded successfully',
       data: {
-        payment: {
-          id: payment._id,
-          transactionId: payment.transactionId,
-          status: payment.status,
-          proofUpload: {
-            originalName: payment.proofUpload.originalName,
-            url: payment.proofUpload.url,
-            uploadedAt: payment.proofUpload.uploadedAt
-          },
-          subscriptionPlan: payment.subscriptionPlanId
-        }
-      },
-      message: 'Payment proof uploaded successfully. Your payment is now under review.'
+        paymentId: payment._id,
+        status: payment.status,
+        submittedAt: payment.proofUpload.uploadedAt
+      }
     });
   } catch (error) {
     logger.error('Error uploading payment proof:', error);
     
     if (error.message.includes('Payment not found')) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Payment not found or cannot be updated'
+        success: false,
+        error: {
+          code: 'PAYMENT_NOT_FOUND',
+          message: 'Payment not found or cannot be updated'
+        }
       });
     }
     
     if (error.message.includes('expired')) {
       return res.status(410).json({
-        status: 'error',
-        message: 'Payment has expired. Please create a new payment request.'
+        success: false,
+        error: {
+          code: 'PAYMENT_EXPIRED',
+          message: 'Payment has expired. Please create a new payment request.'
+        }
       });
     }
     
     if (error.message.includes('Invalid file type') || error.message.includes('File size')) {
       return res.status(400).json({
-        status: 'error',
-        message: error.message
+        success: false,
+        error: {
+          code: 'INVALID_FILE',
+          message: error.message
+        }
       });
     }
 
     res.status(500).json({
-      status: 'error',
-      message: 'Failed to upload payment proof'
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to upload payment proof'
+      }
     });
   }
 };
 
 /**
- * Get payment details
+ * Get payment status for onboarding flow
+ */
+const getPaymentStatus = async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const userId = req.user.userId;
+
+    const payment = await Payment.findOne({ _id: paymentId, userId })
+      .populate('subscriptionPlanId', 'name');
+
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'PAYMENT_NOT_FOUND',
+          message: 'Payment not found'
+        }
+      });
+    }
+
+    // Map internal status to API status
+    let apiStatus = 'pending';
+    if (payment.status === 'verified' || payment.status === 'completed') {
+      apiStatus = 'verified';
+    } else if (payment.status === 'rejected') {
+      apiStatus = 'rejected';
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        paymentId: payment._id,
+        status: apiStatus,
+        amount: payment.amount,
+        planName: payment.subscriptionPlanId ? payment.subscriptionPlanId.name : 'Unknown Plan',
+        submittedAt: payment.proofUpload ? payment.proofUpload.uploadedAt : null,
+        verifiedAt: payment.verification && payment.verification.verifiedAt ? payment.verification.verifiedAt : null,
+        rejectionReason: payment.verification && payment.verification.rejectionReason ? payment.verification.rejectionReason : null
+      }
+    });
+  } catch (error) {
+    logger.error('Error getting payment status:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to get payment status'
+      }
+    });
+  }
+};
+
+/**
+ * Get payment details (legacy)
  */
 const getPayment = async (req, res) => {
   try {
     const { paymentId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     const payment = await Payment.findOne({ _id: paymentId, userId })
       .populate('subscriptionPlanId', 'name pricing features');
@@ -250,7 +318,7 @@ const getPayment = async (req, res) => {
  */
 const getUserPayments = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     const { status, limit = 20 } = req.query;
     
     const options = {
@@ -290,8 +358,11 @@ const getUserPayments = async (req, res) => {
   } catch (error) {
     logger.error('Error getting user payments:', error);
     res.status(500).json({
-      status: 'error',
-      message: 'Failed to get payment history'
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to get payment history'
+      }
     });
   }
 };
@@ -337,8 +408,11 @@ const getPendingPayments = async (req, res) => {
   } catch (error) {
     logger.error('Error getting pending payments:', error);
     res.status(500).json({
-      status: 'error',
-      message: 'Failed to get pending payments'
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to get pending payments'
+      }
     });
   }
 };
@@ -351,15 +425,17 @@ const approvePayment = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Validation failed',
-        errors: errors.array()
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Validation failed'
+        }
       });
     }
 
     const { paymentId } = req.params;
     const { notes } = req.body;
-    const adminUserId = req.user.id;
+    const adminUserId = req.user.userId;
 
     const payment = await paymentService.approvePayment(paymentId, adminUserId, notes);
     
@@ -391,21 +467,30 @@ const approvePayment = async (req, res) => {
     
     if (error.message.includes('Payment not found')) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Payment not found'
+        success: false,
+        error: {
+          code: 'PAYMENT_NOT_FOUND',
+          message: 'Payment not found'
+        }
       });
     }
     
     if (error.message.includes('cannot be verified')) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Payment cannot be verified in current state'
+        success: false,
+        error: {
+          code: 'INVALID_PAYMENT_STATE',
+          message: 'Payment cannot be verified in current state'
+        }
       });
     }
 
     res.status(500).json({
-      status: 'error',
-      message: 'Failed to approve payment'
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to approve payment'
+      }
     });
   }
 };
@@ -418,15 +503,17 @@ const rejectPayment = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Validation failed',
-        errors: errors.array()
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Validation failed'
+        }
       });
     }
 
     const { paymentId } = req.params;
     const { reason, notes } = req.body;
-    const adminUserId = req.user.id;
+    const adminUserId = req.user.userId;
 
     const payment = await paymentService.rejectPayment(paymentId, adminUserId, reason, notes);
     
@@ -459,21 +546,30 @@ const rejectPayment = async (req, res) => {
     
     if (error.message.includes('Payment not found')) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Payment not found'
+        success: false,
+        error: {
+          code: 'PAYMENT_NOT_FOUND',
+          message: 'Payment not found'
+        }
       });
     }
     
     if (error.message.includes('cannot be verified')) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Payment cannot be verified in current state'
+        success: false,
+        error: {
+          code: 'INVALID_PAYMENT_STATE',
+          message: 'Payment cannot be verified in current state'
+        }
       });
     }
 
     res.status(500).json({
-      status: 'error',
-      message: 'Failed to reject payment'
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to reject payment'
+      }
     });
   }
 };
@@ -494,8 +590,11 @@ const getPaymentStats = async (req, res) => {
   } catch (error) {
     logger.error('Error getting payment statistics:', error);
     res.status(500).json({
-      status: 'error',
-      message: 'Failed to get payment statistics'
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to get payment statistics'
+      }
     });
   }
 };
@@ -504,6 +603,7 @@ module.exports = {
   upload,
   createPaymentRequest,
   uploadPaymentProof,
+  getPaymentStatus,
   getPayment,
   getUserPayments,
   getPendingPayments,

@@ -193,7 +193,7 @@ const updateUser = async (req, res) => {
       });
     }
     
-    logger.info(`User ${id} updated by admin ${req.user.id}`);
+    logger.info(`User ${id} updated by admin ${req.admin.adminId}`);
     
     res.status(200).json({
       status: 'success',
@@ -234,7 +234,7 @@ const deleteUser = async (req, res) => {
       { $set: { 'subscription.status': 'cancelled' } }
     );
     
-    logger.info(`User ${id} deleted by admin ${req.user.id}`);
+    logger.info(`User ${id} deleted by admin ${req.admin.adminId}`);
     
     res.status(200).json({
       status: 'success',
@@ -332,7 +332,7 @@ const approvePayment = async (req, res) => {
   try {
     const { paymentId } = req.params;
     const { notes } = req.body;
-    const adminId = req.user.id;
+    const adminId = req.admin.adminId;
     
     const result = await paymentService.approvePayment(paymentId, adminId, notes);
     
@@ -359,7 +359,7 @@ const rejectPayment = async (req, res) => {
   try {
     const { paymentId } = req.params;
     const { reason } = req.body;
-    const adminId = req.user.id;
+    const adminId = req.admin.adminId;
     
     if (!reason || reason.trim().length === 0) {
       return res.status(400).json({
@@ -393,7 +393,7 @@ const approveSubscription = async (req, res) => {
   try {
     const { subscriptionId } = req.params;
     const { startDate, notes } = req.body;
-    const adminId = req.user.id;
+    const adminId = req.admin.adminId;
     
     const subscription = await UserSubscription.findById(subscriptionId)
       .populate(['subscriptionPlanId', 'paymentId']);
@@ -448,7 +448,7 @@ const rejectSubscription = async (req, res) => {
   try {
     const { subscriptionId } = req.params;
     const { reason } = req.body;
-    const adminId = req.user.id;
+    const adminId = req.user.userId;
     
     if (!reason || reason.trim().length === 0) {
       return res.status(400).json({
@@ -690,7 +690,7 @@ const updateUPIConfig = async (req, res) => {
       vpa: vpa || process.env.UPI_VPA
     };
     
-    logger.info(`UPI config updated by admin ${req.user.id}`);
+    logger.info(`UPI config updated by admin ${req.user.userId}`);
     
     res.status(200).json({
       status: 'success',
@@ -720,11 +720,38 @@ const createSubscriptionPlan = async (req, res) => {
       });
     }
 
-    const planData = req.body;
+    const { name, description, price, duration, features, isActive } = req.body;
+    
+    // Transform frontend payload to match SubscriptionPlan schema
+    const planData = {
+      name,
+      description,
+      pricing: {
+        amount: price,
+        currency: 'INR',
+        duration: {
+          months: Math.ceil(duration / 30), // Convert days to months
+          days: duration % 30 // Remaining days
+        }
+      },
+      features: {
+        maxAlertConfigs: -1, // Default unlimited
+        maxOpenTrades: 3, // Default
+        prioritySupport: false, // Default
+        advancedAnalytics: false // Default
+      },
+      status: isActive ? 'active' : 'inactive',
+      metadata: {
+        displayOrder: 0,
+        isPopular: false,
+        tags: features || [] // Use features as tags for now
+      }
+    };
+    
     const plan = new SubscriptionPlan(planData);
     await plan.save();
     
-    logger.info(`Subscription plan created: ${plan.name} by admin ${req.user.id}`);
+    logger.info(`Subscription plan created: ${plan.name} by admin ${req.admin.adminId}`);
     
     res.status(201).json({
       status: 'success',
@@ -761,7 +788,34 @@ const updateSubscriptionPlan = async (req, res) => {
     }
 
     const { planId } = req.params;
-    const updateData = req.body;
+    const { name, description, price, duration, features, isActive } = req.body;
+    
+    // Transform frontend payload to match SubscriptionPlan schema
+    const updateData = {};
+    
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (isActive !== undefined) updateData.status = isActive ? 'active' : 'inactive';
+    
+    if (price !== undefined || duration !== undefined) {
+      updateData.pricing = {};
+      if (price !== undefined) {
+        updateData.pricing.amount = price;
+        updateData.pricing.currency = 'INR';
+      }
+      if (duration !== undefined) {
+        updateData.pricing.duration = {
+          months: Math.ceil(duration / 30),
+          days: duration % 30
+        };
+      }
+    }
+    
+    if (features !== undefined) {
+      updateData.metadata = {
+        tags: features
+      };
+    }
     
     const plan = await SubscriptionPlan.findByIdAndUpdate(
       planId,
@@ -776,7 +830,7 @@ const updateSubscriptionPlan = async (req, res) => {
       });
     }
     
-    logger.info(`Subscription plan updated: ${plan.name} by admin ${req.user.id}`);
+    logger.info(`Subscription plan updated: ${plan.name} by admin ${req.admin.adminId}`);
     
     res.status(200).json({
       status: 'success',
@@ -821,7 +875,7 @@ const deleteSubscriptionPlan = async (req, res) => {
       });
     }
     
-    logger.info(`Subscription plan deleted: ${plan.name} by admin ${req.user.id}`);
+    logger.info(`Subscription plan deleted: ${plan.name} by admin ${req.user.userId}`);
     
     res.status(200).json({
       status: 'success',
@@ -903,6 +957,7 @@ const getSubscriptionPlans = async (req, res) => {
 module.exports = {
   getDashboard,
   getUsers,
+  getUserById,
   updateUser,
   deleteUser,
   getPendingPayments,
@@ -920,5 +975,8 @@ module.exports = {
   createSubscriptionPlan,
   updateSubscriptionPlan,
   deleteSubscriptionPlan,
-  getSubscriptionPlans
+  getSubscriptionPlans,
+  // Add missing exports
+  getUserStats: getAlertStats, // Temporarily map to getAlertStats until proper implementation
+  getRevenueStats: getPaymentStats // Temporarily map to getPaymentStats until proper implementation
 };

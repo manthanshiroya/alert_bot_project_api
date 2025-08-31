@@ -126,12 +126,14 @@ async function createAdminUser() {
 
         // Create admin user
         const adminUser = new AdminUser({
-            name,
+            username: email.replace('@', '_').replace('.', '_'), // Use email as username with safe characters
             email,
             password: hashedPassword,
-            role,
-            permissions,
-            isActive: true,
+            profile: {
+                firstName: name.split(' ')[0] || 'Admin',
+                lastName: name.split(' ').slice(1).join(' ') || 'User'
+            },
+            status: 'active',
             createdAt: new Date(),
             updatedAt: new Date()
         });

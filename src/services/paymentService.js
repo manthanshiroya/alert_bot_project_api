@@ -133,7 +133,7 @@ class PaymentService {
   /**
    * Upload payment proof
    */
-  async uploadPaymentProof(paymentId, file, userId) {
+  async uploadPaymentProof(paymentId, file, userId, transactionId = null, notes = null) {
     try {
       const payment = await Payment.findOne({ 
         _id: paymentId, 
@@ -174,6 +174,17 @@ class PaymentService {
         mimetype: file.mimetype,
         uploadedAt: new Date()
       };
+      
+      // Update transaction ID if provided
+      if (transactionId) {
+        payment.userTransactionId = transactionId;
+      }
+      
+      // Add notes if provided
+      if (notes) {
+        payment.notes = notes;
+      }
+      
       payment.status = 'pending';
 
       await payment.save();

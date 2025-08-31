@@ -91,24 +91,47 @@ const { handleValidationErrors } = require('../middleware/validation');
  *         messageCount: 89
  * 
  *     BotStats:
- *       type: object
- *       properties:
- *         totalUsers:
- *           type: number
- *         activeUsers:
- *           type: number
- *         totalAlerts:
- *           type: number
- *         totalTrades:
- *           type: number
- *         totalPnL:
- *           type: number
- *       example:
- *         totalUsers: 1250
- *         activeUsers: 980
- *         totalAlerts: 15000
- *         totalTrades: 4500
- *         totalPnL: 125000.75
+       type: object
+       properties:
+         totalUsers:
+           type: number
+           description: Total number of Telegram users
+         activeUsers:
+           type: number
+           description: Number of active users
+         blockedUsers:
+           type: number
+           description: Number of blocked users
+         linkedUsers:
+           type: number
+           description: Number of users linked to web accounts
+         messagesSent:
+           type: number
+           description: Total messages sent by bot
+         messagesReceived:
+           type: number
+           description: Total messages received by bot
+         uptime:
+           type: string
+           description: Bot uptime
+         status:
+           type: string
+           enum: [running, stopped, error]
+           description: Bot status
+         lastActivity:
+           type: string
+           format: date-time
+           description: Last bot activity
+       example:
+         totalUsers: 1250
+         activeUsers: 980
+         blockedUsers: 15
+         linkedUsers: 800
+         messagesSent: 15000
+         messagesReceived: 4500
+         uptime: "5 days, 12 hours"
+         status: "running"
+         lastActivity: "2024-01-20T14:25:00Z"
  * 
  *     SendMessageRequest:
  *       type: object
@@ -171,7 +194,7 @@ const { handleValidationErrors } = require('../middleware/validation');
  * /api/telegram/bot/initialize:
  *   post:
  *     summary: Initialize Telegram bot
- *     description: Start the Telegram bot service and begin polling for messages
+ *     description: Initialize and start the Telegram bot service
  *     tags: [Telegram Bot Management]
  *     security:
  *       - bearerAuth: []
@@ -185,11 +208,40 @@ const { handleValidationErrors } = require('../middleware/validation');
  *               properties:
  *                 success:
  *                   type: boolean
+ *                   example: true
  *                 message:
  *                   type: string
- *             example:
- *               success: true
- *               message: "Telegram bot initialized successfully"
+ *                   example: Telegram bot initialized successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     botInfo:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: number
+ *                         username:
+ *                           type: string
+ *                         first_name:
+ *                           type: string
+ *       400:
+ *         description: Bot already running or initialization failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Failed to initialize bot
  *         content:
@@ -222,13 +274,34 @@ router.post('/bot/initialize',
  *               properties:
  *                 success:
  *                   type: boolean
+ *                   example: true
  *                 message:
  *                   type: string
- *             example:
- *               success: true
- *               message: "Telegram bot stopped successfully"
+ *                   example: Telegram bot stopped successfully
+ *       400:
+ *         description: Bot not running or stop failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Failed to stop bot
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/bot/stop', 
   authenticateToken, 
@@ -273,6 +346,59 @@ router.post('/bot/stop',
  *                   totalTrades: 4500
  *                   totalPnL: 125000.75
  */
+/**
+ * @swagger
+ * /api/admin/telegram/bot/status:
+ *   get:
+ *     summary: Get Telegram bot status
+ *     description: Retrieve current status and information about the Telegram bot
+ *     tags: [Telegram Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Bot status retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     status:
+ *                       type: string
+ *                       enum: [running, stopped, error]
+ *                       example: running
+ *                     botInfo:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: number
+ *                         username:
+ *                           type: string
+ *                         first_name:
+ *                           type: string
+ *                     uptime:
+ *                       type: string
+ *                       example: "2 days, 5 hours"
+ *                     lastActivity:
+ *                       type: string
+ *                       format: date-time
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get('/bot/status', 
   authenticateToken, 
   requireAdmin, 
@@ -281,11 +407,11 @@ router.get('/bot/status',
 
 /**
  * @swagger
- * /api/telegram/users:
+ * /api/admin/telegram/users:
  *   get:
  *     summary: Get Telegram users
- *     description: Retrieve a paginated list of Telegram users with filtering options
- *     tags: [Telegram Users]
+ *     description: Retrieve a paginated list of Telegram users with optional filtering
+ *     tags: [Telegram Admin]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -295,7 +421,7 @@ router.get('/bot/status',
  *           type: integer
  *           minimum: 1
  *           default: 1
- *         description: Page number
+ *         description: Page number for pagination
  *       - in: query
  *         name: limit
  *         schema:
@@ -313,7 +439,7 @@ router.get('/bot/status',
  *         description: Filter users by status
  *     responses:
  *       200:
- *         description: Users retrieved successfully
+ *         description: Telegram users retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -321,6 +447,7 @@ router.get('/bot/status',
  *               properties:
  *                 success:
  *                   type: boolean
+ *                   example: true
  *                 data:
  *                   type: object
  *                   properties:
@@ -339,6 +466,18 @@ router.get('/bot/status',
  *                           type: integer
  *                         pages:
  *                           type: integer
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.get('/users', 
   authenticateToken, 
@@ -354,11 +493,11 @@ router.get('/users',
 
 /**
  * @swagger
- * /api/telegram/users/{telegramId}:
+ * /api/admin/telegram/users/{telegramId}:
  *   get:
  *     summary: Get specific Telegram user
  *     description: Retrieve detailed information about a specific Telegram user
- *     tags: [Telegram Users]
+ *     tags: [Telegram Admin]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -370,7 +509,7 @@ router.get('/users',
  *         description: Telegram user ID
  *     responses:
  *       200:
- *         description: User retrieved successfully
+ *         description: Telegram user retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -378,17 +517,27 @@ router.get('/users',
  *               properties:
  *                 success:
  *                   type: boolean
+ *                   example: true
  *                 data:
- *                   type: object
- *                   properties:
- *                     user:
- *                       $ref: '#/components/schemas/TelegramUser'
- *                     recentTrades:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Trade'
+ *                   $ref: '#/components/schemas/TelegramUser'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       404:
- *         description: User not found
+ *         description: Telegram user not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.get('/users/:telegramId', 
   authenticateToken, 
@@ -402,11 +551,11 @@ router.get('/users/:telegramId',
 
 /**
  * @swagger
- * /api/telegram/users/{telegramId}:
+ * /api/admin/telegram/users/{telegramId}:
  *   put:
  *     summary: Update Telegram user
  *     description: Update Telegram user preferences and settings
- *     tags: [Telegram Users]
+ *     tags: [Telegram Admin]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -449,9 +598,38 @@ router.get('/users/:telegramId',
  *                 timezone: "America/New_York"
  *     responses:
  *       200:
- *         description: User updated successfully
+ *         description: Telegram user updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Telegram user updated successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/TelegramUser'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       404:
- *         description: User not found
+ *         description: Telegram user not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.put('/users/:telegramId', 
   authenticateToken, 
@@ -472,11 +650,11 @@ router.put('/users/:telegramId',
 
 /**
  * @swagger
- * /api/telegram/users/{telegramId}/block:
+ * /api/admin/telegram/users/{telegramId}/block:
  *   post:
  *     summary: Block/unblock Telegram user
  *     description: Block or unblock a Telegram user from receiving messages
- *     tags: [Telegram Users]
+ *     tags: [Telegram Admin]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -503,8 +681,35 @@ router.put('/users/:telegramId',
  *     responses:
  *       200:
  *         description: User block status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: User block status updated successfully
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       404:
- *         description: User not found
+ *         description: Telegram user not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.post('/users/:telegramId/block', 
   authenticateToken, 
@@ -519,11 +724,11 @@ router.post('/users/:telegramId/block',
 
 /**
  * @swagger
- * /api/telegram/users/{telegramId}/message:
+ * /api/admin/telegram/users/{telegramId}/message:
  *   post:
  *     summary: Send message to user
  *     description: Send a direct message to a specific Telegram user
- *     tags: [Telegram Messaging]
+ *     tags: [Telegram Admin]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -542,10 +747,39 @@ router.post('/users/:telegramId/block',
  *     responses:
  *       200:
  *         description: Message sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Message sent successfully
  *       400:
  *         description: Invalid request or user is blocked
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       404:
- *         description: User not found
+ *         description: Telegram user not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.post('/users/:telegramId/message', 
   authenticateToken, 
@@ -561,11 +795,11 @@ router.post('/users/:telegramId/message',
 
 /**
  * @swagger
- * /api/telegram/broadcast:
+ * /api/admin/telegram/broadcast:
  *   post:
  *     summary: Broadcast message
  *     description: Send a message to multiple users based on target group
- *     tags: [Telegram Messaging]
+ *     tags: [Telegram Admin]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -576,7 +810,7 @@ router.post('/users/:telegramId/message',
  *             $ref: '#/components/schemas/BroadcastRequest'
  *     responses:
  *       200:
- *         description: Broadcast completed
+ *         description: Broadcast completed successfully
  *         content:
  *           application/json:
  *             schema:
@@ -584,24 +818,34 @@ router.post('/users/:telegramId/message',
  *               properties:
  *                 success:
  *                   type: boolean
+ *                   example: true
  *                 message:
  *                   type: string
+ *                   example: Broadcast completed successfully
  *                 data:
  *                   type: object
  *                   properties:
  *                     totalUsers:
  *                       type: number
+ *                       example: 1000
  *                     successCount:
  *                       type: number
+ *                       example: 985
  *                     failureCount:
  *                       type: number
- *             example:
- *               success: true
- *               message: "Broadcast completed"
- *               data:
- *                 totalUsers: 1000
- *                 successCount: 985
- *                 failureCount: 15
+ *                       example: 15
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.post('/broadcast', 
   authenticateToken, 
@@ -617,11 +861,11 @@ router.post('/broadcast',
 
 /**
  * @swagger
- * /api/telegram/link:
+ * /api/admin/telegram/link:
  *   post:
  *     summary: Link Telegram account
  *     description: Link a Telegram account to a web account
- *     tags: [Account Management]
+ *     tags: [Telegram Admin]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -633,10 +877,39 @@ router.post('/broadcast',
  *     responses:
  *       200:
  *         description: Accounts linked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Accounts linked successfully
  *       400:
  *         description: Invalid request or account already linked
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       404:
  *         description: User or Telegram user not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.post('/link', 
   authenticateToken, 
@@ -651,11 +924,11 @@ router.post('/link',
 
 /**
  * @swagger
- * /api/telegram/users/{telegramId}/unlink:
+ * /api/admin/telegram/users/{telegramId}/unlink:
  *   post:
  *     summary: Unlink Telegram account
  *     description: Unlink a Telegram account from its web account
- *     tags: [Account Management]
+ *     tags: [Telegram Admin]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -668,10 +941,39 @@ router.post('/link',
  *     responses:
  *       200:
  *         description: Account unlinked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Account unlinked successfully
  *       400:
  *         description: Account is not linked
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       404:
  *         description: Telegram user not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.post('/users/:telegramId/unlink', 
   authenticateToken, 
@@ -685,11 +987,11 @@ router.post('/users/:telegramId/unlink',
 
 /**
  * @swagger
- * /api/telegram/statistics:
+ * /api/admin/telegram/statistics:
  *   get:
  *     summary: Get bot statistics
  *     description: Get comprehensive statistics about the Telegram bot usage
- *     tags: [Telegram Bot Management]
+ *     tags: [Telegram Admin]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -702,6 +1004,7 @@ router.post('/users/:telegramId/unlink',
  *               properties:
  *                 success:
  *                   type: boolean
+ *                   example: true
  *                 data:
  *                   type: object
  *                   properties:
@@ -710,14 +1013,19 @@ router.post('/users/:telegramId/unlink',
  *                       properties:
  *                         totalUsers:
  *                           type: number
+ *                           example: 1250
  *                         activeUsers:
  *                           type: number
+ *                           example: 980
  *                         blockedUsers:
  *                           type: number
+ *                           example: 15
  *                         linkedUsers:
  *                           type: number
+ *                           example: 800
  *                         isInitialized:
  *                           type: boolean
+ *                           example: true
  *                     performance:
  *                       $ref: '#/components/schemas/BotStats'
  *                     recentActivity:
@@ -738,6 +1046,16 @@ router.post('/users/:telegramId/unlink',
  *                             format: date-time
  *                           messageCount:
  *                             type: number
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.get('/statistics', 
   authenticateToken, 

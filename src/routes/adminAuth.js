@@ -18,7 +18,74 @@ const loginValidation = [
         .withMessage('Password must be at least 6 characters long')
 ];
 
-// Admin login
+/**
+ * @swagger
+ * /api/admin/auth/login:
+ *   post:
+ *     tags: [Admin Authentication]
+ *     summary: Admin login endpoint
+ *     description: Authenticate admin user and receive JWT token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Admin email address
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 6
+ *                 description: Admin password
+ *               rememberMe:
+ *                 type: boolean
+ *                 description: Set to true for 30-day token expiry
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Login successful
+ *                 token:
+ *                   type: string
+ *                   description: JWT token for authentication
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     permissions:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *       401:
+ *         description: Invalid credentials
+ *       423:
+ *         description: Account locked due to too many failed attempts
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/login', loginValidation, async (req, res) => {
     try {
         // Check validation errors
@@ -34,7 +101,7 @@ router.post('/login', loginValidation, async (req, res) => {
         const { email, password, rememberMe } = req.body;
 
         // Find admin user
-        const admin = await AdminUser.findOne({ email, isActive: true });
+        const admin = await AdminUser.findOne({ email, status: 'active' }).select('+password');
         if (!admin) {
             return res.status(401).json({
                 success: false,
@@ -73,9 +140,9 @@ router.post('/login', loginValidation, async (req, res) => {
         const tokenExpiry = rememberMe ? '30d' : '24h';
         const token = jwt.sign(
             { 
-                adminId: admin._id,
-                email: admin.email,
-                role: admin.role
+                userId: admin._id,  // Changed from adminId to userId
+                role: 'admin',      // Added explicit role
+                type: 'access'      // Added token type
             },
             process.env.JWT_SECRET,
             { expiresIn: tokenExpiry }
@@ -96,7 +163,7 @@ router.post('/login', loginValidation, async (req, res) => {
                 id: admin._id,
                 name: admin.name,
                 email: admin.email,
-                role: admin.role,
+                role: 'admin',
                 permissions: admin.permissions
             }
         });
@@ -110,7 +177,46 @@ router.post('/login', loginValidation, async (req, res) => {
     }
 });
 
-// Verify admin token
+/**
+ * @swagger
+ * /api/admin/auth/verify:
+ *   get:
+ *     tags: [Admin Authentication]
+ *     summary: Verify admin token
+ *     description: Verify the admin JWT token and get user information
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Token is valid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     permissions:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *       401:
+ *         description: Invalid or expired token
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/verify', authMiddleware.verifyAdminToken, async (req, res) => {
     try {
         const admin = await AdminUser.findById(req.admin.adminId)
@@ -144,7 +250,34 @@ router.get('/verify', authMiddleware.verifyAdminToken, async (req, res) => {
     }
 });
 
-// Admin logout
+/**
+ * @swagger
+ * /api/admin/auth/logout:
+ *   post:
+ *     tags: [Admin Authentication]
+ *     summary: Admin logout
+ *     description: Logout admin user and invalidate token
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Logout successful
+ *       401:
+ *         description: Invalid or expired token
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/logout', authMiddleware.verifyAdminToken, async (req, res) => {
     try {
         // In a more sophisticated setup, you might want to blacklist the token
@@ -164,7 +297,48 @@ router.post('/logout', authMiddleware.verifyAdminToken, async (req, res) => {
     }
 });
 
-// Get admin profile
+/**
+ * @swagger
+ * /api/admin/auth/profile:
+ *   get:
+ *     tags: [Admin Authentication]
+ *     summary: Get admin profile
+ *     description: Get the current admin user's profile information
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     permissions:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *       401:
+ *         description: Invalid or expired token
+ *       404:
+ *         description: Admin not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/profile', authMiddleware.verifyAdminToken, async (req, res) => {
     try {
         const admin = await AdminUser.findById(req.admin.adminId)

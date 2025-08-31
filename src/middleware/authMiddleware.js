@@ -80,9 +80,17 @@ const verifyAdminToken = async (req, res, next) => {
         // Verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
+        // Check if token is for admin
+        if (decoded.role !== 'admin') {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid admin token'
+            });
+        }
+
         // Check if admin exists and is active
-        const admin = await AdminUser.findById(decoded.adminId).select('-password');
-        if (!admin || !admin.isActive) {
+        const admin = await AdminUser.findById(decoded.userId).select('-password');
+        if (!admin || admin.status !== 'active') {
             return res.status(401).json({
                 success: false,
                 message: 'Invalid or expired admin token'

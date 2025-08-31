@@ -199,7 +199,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/webhooks', webhookRoutes);
-app.use('/api/admin', adminAuthRoutes); // Admin authentication routes
+app.use('/api/admin/auth', adminAuthRoutes); // Admin authentication routes
 app.use('/api/admin', adminRoutes); // Admin management routes
 app.use('/api/telegram', telegramRoutes);
 app.use('/api/payments', paymentRoutes);

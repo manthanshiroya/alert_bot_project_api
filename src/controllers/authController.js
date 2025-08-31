@@ -621,7 +621,7 @@ const resetPassword = async (req, res) => {
 module.exports = {
   register,
   login,
-  adminLogin,
+  adminLogin,  // Add adminLogin to exports
   logout,
   refreshToken,
   getProfile,

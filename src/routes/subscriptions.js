@@ -4,7 +4,22 @@ const subscriptionController = require('../controllers/subscriptionController');
 const { authenticateToken } = require('../middleware/auth');
 const { body } = require('express-validator');
 
-// Validation middleware for subscription request
+// Validation middleware for onboarding subscription request
+const validateOnboardingSubscriptionRequest = [
+  body('planId')
+    .isMongoId()
+    .withMessage('Valid plan ID is required'),
+  body('amount')
+    .isNumeric()
+    .isFloat({ min: 0 })
+    .withMessage('Valid amount is required'),
+  body('planName')
+    .notEmpty()
+    .trim()
+    .withMessage('Plan name is required')
+];
+
+// Validation middleware for subscription request (legacy)
 const validateSubscriptionRequest = [
   body('subscriptionPlanId')
     .isMongoId()
@@ -48,6 +63,7 @@ const validateSubscriptionCancel = [
 // Subscription routes
 router.get('/plans', subscriptionController.getPlans);
 router.get('/plans/:planId', subscriptionController.getPlan);
+router.post('/request', authenticateToken, validateOnboardingSubscriptionRequest, subscriptionController.createSubscriptionRequest);
 router.post('/subscribe', authenticateToken, validateSubscriptionRequest, subscriptionController.subscribe);
 router.post('/cancel', authenticateToken, validateSubscriptionCancel, subscriptionController.cancelSubscription);
 router.put('/update', authenticateToken, validateSubscriptionUpdate, subscriptionController.updateSubscription);

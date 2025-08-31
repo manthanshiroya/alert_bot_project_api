@@ -146,7 +146,8 @@ const userSchema = new mongoose.Schema({
     key: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
+      sparse: true
     },
     permissions: [{
       type: String,
