@@ -48,24 +48,21 @@ const userSchema = new mongoose.Schema({
   subscription: {
     plan: {
       type: String,
-      enum: ['free', 'premium', 'pro'],
-      default: 'free'
+      enum: ['free', 'premium', 'pro']
+      // No default - users start without any subscription
     },
     status: {
       type: String,
-      enum: ['active', 'inactive', 'expired', 'cancelled'],
-      default: 'active'
+      enum: ['active', 'inactive', 'expired', 'cancelled']
+      // No default - only set when subscription is created
     },
     startDate: {
-      type: Date,
-      default: Date.now
+      type: Date
+      // No default - only set when subscription is created
     },
     expiresAt: {
-      type: Date,
-      default: function() {
-        // Free plan expires in 30 days by default
-        return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-      }
+      type: Date
+      // No default - only set when subscription is created
     },
     stripeCustomerId: {
       type: String,
@@ -271,6 +268,10 @@ userSchema.statics.findByTelegramUserId = function(telegramUserId) {
 
 // Static method to check if subscription is active
 userSchema.methods.hasActiveSubscription = function() {
+  // Return false if no subscription fields are set
+  if (!this.subscription.status || !this.subscription.expiresAt) {
+    return false;
+  }
   return this.subscription.status === 'active' && 
          this.subscription.expiresAt > new Date();
 };

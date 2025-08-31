@@ -301,6 +301,7 @@ class PaymentService {
         userSubscription = new UserSubscription({
           userId: payment.userId._id,
           subscriptionPlanId: payment.subscriptionPlanId._id,
+          paymentId: payment._id,
           payment: {
             transactionId: payment.transactionId,
             amount: payment.amount,
@@ -329,6 +330,20 @@ class PaymentService {
       }
 
       await userSubscription.save();
+      
+      // Update the User model's embedded subscription field
+      // This replaces any existing subscription with the new one
+      const User = require('../models/User');
+      await User.findByIdAndUpdate(payment.userId._id, {
+        'subscription.plan': subscriptionPlan.name.toLowerCase(),
+        'subscription.status': 'active',
+        'subscription.startDate': startDate,
+        'subscription.expiresAt': endDate,
+        'subscription.stripeCustomerId': payment.stripeCustomerId || undefined,
+        'subscription.stripeSubscriptionId': payment.stripeSubscriptionId || undefined
+      });
+      
+      logger.info(`User subscription updated: User ${payment.userId._id} now has ${subscriptionPlan.name} plan`);
       
       return userSubscription;
     } catch (error) {

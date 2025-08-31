@@ -413,10 +413,11 @@ const {
 } = require('../validators/authValidators');
 const rateLimit = require('express-rate-limit');
 
+// TESTING CONFIGURATION - Higher rate limits for development/testing
 // Rate limiting for auth endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per windowMs
+  max: 100, // TESTING: Increased from 5 to 100 requests per windowMs
   message: {
     success: false,
     message: 'Too many authentication attempts, please try again later'
@@ -427,7 +428,7 @@ const authLimiter = rateLimit({
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 login attempts per windowMs
+  max: 200, // TESTING: Increased from 10 to 200 login attempts per windowMs
   message: {
     success: false,
     message: 'Too many login attempts, please try again later'

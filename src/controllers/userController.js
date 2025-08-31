@@ -321,6 +321,24 @@ const getSubscription = async (req, res) => {
       });
     }
     
+    // Handle case where user has no subscription
+    if (!user.subscription || !user.subscription.status || !user.subscription.expiresAt) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          subscription: {
+            plan: null,
+            status: null,
+            startDate: null,
+            expiresAt: null,
+            isActive: false,
+            daysRemaining: 0,
+            message: 'No subscription active'
+          }
+        }
+      });
+    }
+    
     // Calculate days remaining
     const now = new Date();
     const expiresAt = new Date(user.subscription.expiresAt);

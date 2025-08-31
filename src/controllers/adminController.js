@@ -53,7 +53,17 @@ const getUsers = async (req, res) => {
     
     let query = {};
     if (status) {
-      query.status = status;
+      if (status === 'deleted') {
+        query.isActive = false;
+      } else if (status === 'active') {
+        query.isActive = true;
+      } else {
+        // For subscription status filtering
+        query['subscription.status'] = status;
+      }
+    } else {
+      // By default, exclude deleted users (isActive = false)
+      query.isActive = true;
     }
     if (search) {
       query.$or = [
@@ -224,8 +234,8 @@ const deleteUser = async (req, res) => {
       });
     }
     
-    // Soft delete by updating status
-    user.status = 'deleted';
+    // Soft delete by setting isActive to false
+    user.isActive = false;
     await user.save();
     
     // Cancel all active subscriptions
@@ -287,43 +297,7 @@ const getPendingPayments = async (req, res) => {
   }
 };
 
-/**
- * Get pending subscription approvals (legacy support)
- */
-const getPendingSubscriptions = async (req, res) => {
-  try {
-    const { page = 1, limit = 20 } = req.query;
-    const skip = (page - 1) * limit;
-    
-    const [subscriptions, total] = await Promise.all([
-      UserSubscription.find({ 'payment.status': 'pending' })
-        .populate(['userId', 'subscriptionPlanId', 'paymentId'])
-        .sort({ createdAt: 1 })
-        .skip(skip)
-        .limit(parseInt(limit)),
-      UserSubscription.countDocuments({ 'payment.status': 'pending' })
-    ]);
-    
-    res.status(200).json({
-      status: 'success',
-      data: {
-        subscriptions,
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total,
-          pages: Math.ceil(total / limit)
-        }
-      }
-    });
-  } catch (error) {
-    logger.error('Error fetching pending subscriptions:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to fetch pending subscriptions'
-    });
-  }
-};
+
 
 /**
  * Approve payment
@@ -386,109 +360,9 @@ const rejectPayment = async (req, res) => {
   }
 };
 
-/**
- * Approve subscription (legacy support)
- */
-const approveSubscription = async (req, res) => {
-  try {
-    const { subscriptionId } = req.params;
-    const { startDate, notes } = req.body;
-    const adminId = req.admin.adminId;
-    
-    const subscription = await UserSubscription.findById(subscriptionId)
-      .populate(['subscriptionPlanId', 'paymentId']);
-    
-    if (!subscription) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Subscription not found'
-      });
-    }
-    
-    // If subscription has a paymentId, approve through payment service
-    if (subscription.paymentId) {
-      const result = await paymentService.approvePayment(subscription.paymentId, adminId, notes);
-      return res.status(200).json({
-        status: 'success',
-        data: result,
-        message: 'Subscription approved successfully'
-      });
-    }
-    
-    // Legacy approval for old subscriptions
-    if (subscription.payment.status !== 'pending') {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Subscription is not pending approval'
-      });
-    }
-    
-    await subscription.approve(adminId, startDate ? new Date(startDate) : null);
-    
-    logger.info(`Subscription ${subscriptionId} approved by admin ${adminId}`);
-    
-    res.status(200).json({
-      status: 'success',
-      data: { subscription },
-      message: 'Subscription approved successfully'
-    });
-  } catch (error) {
-    logger.error('Error approving subscription:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to approve subscription'
-    });
-  }
-};
 
-/**
- * Reject subscription
- */
-const rejectSubscription = async (req, res) => {
-  try {
-    const { subscriptionId } = req.params;
-    const { reason } = req.body;
-    const adminId = req.user.userId;
-    
-    if (!reason || reason.trim().length === 0) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Rejection reason is required'
-      });
-    }
-    
-    const subscription = await UserSubscription.findById(subscriptionId);
-    
-    if (!subscription) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Subscription not found'
-      });
-    }
-    
-    if (subscription.payment.status !== 'pending') {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Subscription is not pending approval'
-      });
-    }
-    
-    await subscription.reject(adminId, reason);
-    
-    logger.info(`Subscription ${subscriptionId} rejected by admin ${adminId}`);
-    
-    res.status(200).json({
-      status: 'success',
-      message: 'Subscription rejected successfully'
-    });
-  } catch (error) {
-    logger.error('Error rejecting subscription:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to reject subscription'
-    });
-  }
-};
+
+
 
 /**
  * Get system statistics
@@ -573,9 +447,10 @@ const getPaymentStats = async (req, res) => {
 // Helper functions for statistics
 async function getUserStatistics() {
   const [totalUsers, activeUsers, newUsersToday] = await Promise.all([
-    User.countDocuments(),
+    User.countDocuments({ status: { $ne: 'deleted' } }),
     User.countDocuments({ status: 'active' }),
     User.countDocuments({
+      status: { $ne: 'deleted' },
       createdAt: {
         $gte: new Date(new Date().setHours(0, 0, 0, 0))
       }
@@ -690,7 +565,7 @@ const updateUPIConfig = async (req, res) => {
       vpa: vpa || process.env.UPI_VPA
     };
     
-    logger.info(`UPI config updated by admin ${req.user.userId}`);
+    logger.info(`UPI config updated by admin ${req.admin.adminId}`);
     
     res.status(200).json({
       status: 'success',
@@ -875,7 +750,7 @@ const deleteSubscriptionPlan = async (req, res) => {
       });
     }
     
-    logger.info(`Subscription plan deleted: ${plan.name} by admin ${req.user.userId}`);
+    logger.info(`Subscription plan deleted: ${plan.name} by admin ${req.admin.adminId}`);
     
     res.status(200).json({
       status: 'success',
@@ -963,9 +838,6 @@ module.exports = {
   getPendingPayments,
   approvePayment,
   rejectPayment,
-  getPendingSubscriptions,
-  approveSubscription,
-  rejectSubscription,
   getSystemStats,
   getAlertStats,
   getSubscriptionStats,
@@ -976,7 +848,7 @@ module.exports = {
   updateSubscriptionPlan,
   deleteSubscriptionPlan,
   getSubscriptionPlans,
-  // Add missing exports
+  // Temporary mappings
   getUserStats: getAlertStats, // Temporarily map to getAlertStats until proper implementation
   getRevenueStats: getPaymentStats // Temporarily map to getPaymentStats until proper implementation
 };

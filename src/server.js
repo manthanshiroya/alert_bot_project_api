@@ -95,10 +95,11 @@ app.use(helmet({
   },
 }));
 
+// TESTING CONFIGURATION - Higher rate limits for development/testing
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 1000, // TESTING: Increased from 100 to 1000 requests per windowMs
   message: {
     error: 'Too many requests from this IP, please try again later.',
   },
@@ -137,6 +138,7 @@ app.use(requestLogger);
 
 // Serve static files
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+app.use('/qr-codes', express.static(path.join(__dirname, '../public/qr-codes')));
 app.use('/admin', express.static(path.join(__dirname, '../public/admin')));
 
 // Health check endpoint
